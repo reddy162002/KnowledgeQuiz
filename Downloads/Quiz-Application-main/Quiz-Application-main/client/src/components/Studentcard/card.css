@@ -1,0 +1,14 @@
+.studentCard {
+  border-style: solid;
+  border-radius: 10px;
+  transition: 0.4s ease all;
+  background-color: var(--background-color-cards);
+  /* box-shadow: 0px 3px 5px 0px #dbb158; */
+  
+}
+
+.studentCard:hover {
+  transition: 0.4s ease all;
+  transform: translateY(-0.4vh);
+  box-shadow: 0px 3px 5px 0px #dbb158;
+}
