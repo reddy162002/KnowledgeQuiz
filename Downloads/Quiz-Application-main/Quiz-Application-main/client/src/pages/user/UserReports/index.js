@@ -36,7 +36,7 @@ function UserReports() {
     {
       title: "Obtained Marks",
       dataIndex: "correctAnswers",
-      render: (text, record) => <>{record.result.correctAnswers.length}</>,
+      render: (text, record) => <>{record.result.obtainedMarks}</>,
     },
     {
       title: "Verdict",
