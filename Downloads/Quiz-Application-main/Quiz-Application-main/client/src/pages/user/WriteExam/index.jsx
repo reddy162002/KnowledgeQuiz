@@ -54,8 +54,12 @@ function WriteExam() {
         }
       });
 
+      const perQueMarks = examData.totalMarks / questions.length;
+      const obtainedMarks = correctAnswers.length * perQueMarks;
+      const obtainedPercent = obtainedMarks / examData.totalMarks * 100;
+
       let verdict = "Pass";
-      if (correctAnswers.length < examData.passingMarks) {
+      if (obtainedMarks < examData.passingMarks) {
         verdict = "Fail";
       }
 
@@ -63,6 +67,8 @@ function WriteExam() {
       const tempResult = {
         correctAnswers,
         wrongAnswers,
+        obtainedMarks,
+        obtainedPercent,
         verdict,
       };
       setResult(tempResult);
@@ -211,7 +217,7 @@ function WriteExam() {
               <div className="marks">
                 <h1 className="text-md">Total Marks : {examData.totalMarks}</h1>
                 <h1 className="text-md">
-                  Obtained Marks :{result.correctAnswers.length}
+                  Obtained Marks :{result.obtainedMarks}
                 </h1>
                 <h1 className="text-md">
                   Wrong Answers : {result.wrongAnswers.length}
