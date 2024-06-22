@@ -21,6 +21,7 @@ function WriteExam() {
   const [timeUp, setTimeUp] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const { user } = useSelector((state) => state.users);
+  const [render, setRender] = useState(false);
   const getExamData = async () => {
     try {
       dispatch(ShowLoading());
@@ -115,7 +116,7 @@ function WriteExam() {
     if (params.id) {
       getExamData();
     }
-  }, []);
+  }, [render]);
   return (
     examData && (
       <div className="mt-2" style={{padding:"3vh"}}>
@@ -232,10 +233,11 @@ function WriteExam() {
                   <button
                     className="primary-outlined-btn"
                     onClick={() => {
-                      setView("instructions");
-                      setSelectedQuestionIndex(0);
-                      setSelectedOptions({});
-                      setSecondsLeft(examData.duration);
+                      window.location.reload();
+                      // setView("instructions");
+                      // setSelectedQuestionIndex(0);
+                      // setSelectedOptions({});
+                      // setSecondsLeft(examData.duration);
                     }}
                   >
                     Retake Exam
@@ -315,10 +317,11 @@ function WriteExam() {
               <button
                 className="primary-contained-btn"
                 onClick={() => {
-                  setView("instructions");
-                  setSelectedQuestionIndex(0);
-                  setSelectedOptions({});
-                  setSecondsLeft(examData.duration);
+                  window.location.reload();
+                  // setView("instructions");
+                  // setSelectedQuestionIndex(0);
+                  // setSelectedOptions({});
+                  // setSecondsLeft(examData.duration);
                 }}
               >
                 Retake Exam
