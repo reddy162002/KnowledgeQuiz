@@ -234,10 +234,6 @@ function WriteExam() {
                     className="primary-outlined-btn"
                     onClick={() => {
                       window.location.reload();
-                      // setView("instructions");
-                      // setSelectedQuestionIndex(0);
-                      // setSelectedOptions({});
-                      // setSecondsLeft(examData.duration);
                     }}
                   >
                     Retake Exam
@@ -318,10 +314,6 @@ function WriteExam() {
                 className="primary-contained-btn"
                 onClick={() => {
                   window.location.reload();
-                  // setView("instructions");
-                  // setSelectedQuestionIndex(0);
-                  // setSelectedOptions({});
-                  // setSecondsLeft(examData.duration);
                 }}
               >
                 Retake Exam
