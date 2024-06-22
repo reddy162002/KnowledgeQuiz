@@ -21,7 +21,6 @@ function WriteExam() {
   const [timeUp, setTimeUp] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const { user } = useSelector((state) => state.users);
-  const [render, setRender] = useState(false);
   const getExamData = async () => {
     try {
       dispatch(ShowLoading());
