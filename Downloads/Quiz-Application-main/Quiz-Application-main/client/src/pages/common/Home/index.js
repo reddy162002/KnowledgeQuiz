@@ -71,11 +71,10 @@ function Home() {
       message.error(error.message);
     }
   };
-
   return (
     user && (
       <div style={{margin:"1vh 1vw"}}>
-        <div style={{padding:"0vh 2vh"}}><PageTitle title={!subjectQuiz ? "Exams" : "Quizzes View"}user={`Hi ${user.name}`} /></div>
+        <div style={{padding:"0vh 2vh"}}><PageTitle title={!subjectQuiz ? "Subjects" : "Quizzes"}/></div>
       <div style={{padding:"0.5vh 2vh"}}>
         {!subjectQuiz && (
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
@@ -88,9 +87,6 @@ function Home() {
           <div style={{display:"grid", gap:"2vh", padding:"1.5vh"}}>
                 <h1 style={{fontSize:"2.5vh"}}>{exam?.name}</h1>
                 <img style={{placeSelf:"center", height:"10vh", width:"10vw"}} src= {exam.image} />
-
-                {/* <h1 className="text-md">Subject : {exam.name}</h1> */}
-
                 <button
                   className="primary-outlined-btn"
                   onClick={() => handleSubjectQuiz(exam.name)}
