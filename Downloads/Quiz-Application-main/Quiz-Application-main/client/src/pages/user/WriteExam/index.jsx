@@ -115,7 +115,7 @@ function WriteExam() {
     if (params.id) {
       getExamData();
     }
-  }, [render]);
+  }, []);
   return (
     examData && (
       <div className="mt-2" style={{padding:"3vh"}}>
