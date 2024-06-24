@@ -77,7 +77,7 @@ function AdminReports() {
   return (
     <div>
       <PageTitle title="Reports" />
-      <div className="divider"></div>
+      <div style={{padding:"0vh 2vw"}}>
       <div className="flex gap-2">
         <input
           type="text"
@@ -111,6 +111,7 @@ function AdminReports() {
         </button>
       </div>
       <Table columns={columns} dataSource={reportsData} className="mt-2" />
+    </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { getSubjectExams, getAllSubjects } from "../../../apicalls/subjects";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import PageTitle from "../../../components/PageTitle";
 import { useNavigate } from "react-router-dom";
-import StudentCard from "../../../components/Studentcard/card";
+import Card from "../../../components/Studentcard/card";
 
 function Home() {
   const [exams, setExams] = useState([]);
@@ -79,7 +79,7 @@ function Home() {
         {!subjectQuiz && (
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
           {subjects.map((exam) => (
-           <StudentCard
+           <Card
            height="100%"
            width="100%"
            borderStyle="normalselected"
@@ -94,7 +94,7 @@ function Home() {
                   View Quizzes
                 </button>
           </div>
-        </StudentCard>
+        </Card>
       ))}
       </div>
       )}
@@ -102,7 +102,7 @@ function Home() {
         <>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
           {exams.map((exam) => (
-            <StudentCard
+            <Card
             height="100%"
             width="100%"
             borderStyle="normalselected"
@@ -123,7 +123,7 @@ function Home() {
                   Start Quiz
                 </button>
               </div>
-           </StudentCard>
+           </Card>
           ))}
           </div>
         </>)}
