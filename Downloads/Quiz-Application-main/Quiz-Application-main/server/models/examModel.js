@@ -11,7 +11,8 @@ const examSchema = new mongoose.Schema(
       required: true,
     },
     subject: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subject", 
       required: true,
     },
     totalMarks: {

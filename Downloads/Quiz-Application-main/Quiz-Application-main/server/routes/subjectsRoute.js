@@ -6,7 +6,7 @@ const subject = require("../models/sujectModal");
 console.log(subject);
 
 
-router.post("/add-subject", async (req, res) => {
+router.post("/subject", async (req, res) => {
   try {
     const { name, image } = req.body;
 
