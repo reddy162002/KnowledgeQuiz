@@ -1,0 +1,7 @@
+.mainDiv{
+    padding: 3vh;
+}
+.innerDiv{
+    display:flex;
+    justify-content: space-between;
+}
