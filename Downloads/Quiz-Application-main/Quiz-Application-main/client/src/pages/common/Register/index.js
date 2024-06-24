@@ -77,14 +77,21 @@ function Register() {
              rules={[
               { required: true, message: "Please input your Name!" },
             ]}>
+
               <input type="text" />
+            </Form.Item>
+
+            <Form.Item
+              name="dob"
+              label="Date of Birth"
+            >
+              <input type="date" max={new Date().toISOString().split("T")[0]}/>
             </Form.Item>
             <Form.Item
               name="email"
               label="Email"
               rules={[
                 { required: true, message: "Please input your email!" },
-                { type: "email", message: "Please enter a valid email!" },
               ]}
             >
               <input type="text" />
