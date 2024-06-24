@@ -89,7 +89,7 @@ function Home() {
                 <img style={{placeSelf:"center", height:"10vh", width:"10vw"}} src= {exam.image} />
                 <button
                   className="primary-outlined-btn"
-                  onClick={() => handleSubjectQuiz(exam.name)}
+                  onClick={() => handleSubjectQuiz(exam._id)}
                 >
                   View Quizzes
                 </button>
