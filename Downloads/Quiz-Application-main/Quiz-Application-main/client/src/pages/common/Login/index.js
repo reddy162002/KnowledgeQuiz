@@ -7,7 +7,17 @@ import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 
 function Login() {
   const dispatch = useDispatch();
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
   const onFinish = async (values) => {
+    const { email, password } = values;
+    if (!validateEmail(email)) {
+      message.error("Please enter a valid email address.");
+      return;
+    }
+
     try {
       dispatch(ShowLoading());
       const response = await loginUser(values);
