@@ -250,11 +250,11 @@ function WriteExam() {
             </div>
             <div className="lottie-animation">
             {result.verdict === "Pass" && (
-                <img src="https://assets2.pass.png" />
+                <video src="https://assets2.pass.png" />
               )}
 
               {result.verdict === "Fail" && (
-                <img src="https://assets4.fail.png" />
+                <video src="https://assets4.fail.png" />
               )}
             </div>
           </div>
