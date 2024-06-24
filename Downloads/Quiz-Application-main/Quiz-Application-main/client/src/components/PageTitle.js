@@ -1,13 +1,27 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { getUserInfo } from '../apicalls/users';
+import styles from "./PageTitle.module.css";
 
-function PageTitle({title, user}) {
+function PageTitle({title}) {
+  const [user, setUser] = useState();
+  const getUserData = async () => {
+    try {
+      const response = await getUserInfo();
+      setUser(response.data);
+      } catch (error) {
+    }
+  };
+  useEffect(() => {
+      getUserData();
+  }, []);
+
   return (
-       <div className="mt-2" style={{padding:"3vh"}}>
-        <div className="divider"></div>
-        <div style={{display:"flex", justifyContent:"space-between"}}>
-        <h1 className="text-center">{title}</h1>
-        <div style={{display:"grid", fontSize:"2vh"}}>{user}
-        <span>User Role: Admin</span></div>
+       <div className={styles.mainDiv}>
+        <hr />
+        <div className={styles.innerDiv}>
+        <h1>{title}</h1>
+        <div style={{display:"grid"}}> Hi {user?.name}
+        <span>User Role: {user?.isAdmin ? "Admin" : "User"}</span></div>
         </div>
         <hr/>
     </div>

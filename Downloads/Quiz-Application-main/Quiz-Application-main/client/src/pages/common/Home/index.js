@@ -6,7 +6,7 @@ import { getSubjectExams, getAllSubjects } from "../../../apicalls/subjects";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import PageTitle from "../../../components/PageTitle";
 import { useNavigate } from "react-router-dom";
-import StudentCard from "../../../components/Studentcard/card";
+import Card from "../../../components/Studentcard/card";
 
 function Home() {
   const [exams, setExams] = useState([]);
@@ -71,16 +71,15 @@ function Home() {
       message.error(error.message);
     }
   };
-
   return (
     user && (
       <div style={{margin:"1vh 1vw"}}>
-        <div style={{padding:"0vh 2vh"}}><PageTitle title={!subjectQuiz ? "Exams" : "Quizzes View"}user={`Hi ${user.name}`} /></div>
+        <div style={{padding:"0vh 2vh"}}><PageTitle title={!subjectQuiz ? "Subjects" : "Quizzes"}/></div>
       <div style={{padding:"0.5vh 2vh"}}>
         {!subjectQuiz && (
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
           {subjects.map((exam) => (
-           <StudentCard
+           <Card
            height="100%"
            width="100%"
            borderStyle="normalselected"
@@ -88,9 +87,6 @@ function Home() {
           <div style={{display:"grid", gap:"2vh", padding:"1.5vh"}}>
                 <h1 style={{fontSize:"2.5vh"}}>{exam?.name}</h1>
                 <img style={{placeSelf:"center", height:"10vh", width:"10vw"}} src= {exam.image} />
-
-                {/* <h1 className="text-md">Subject : {exam.name}</h1> */}
-
                 <button
                   className="primary-outlined-btn"
                   onClick={() => handleSubjectQuiz(exam.name)}
@@ -98,7 +94,7 @@ function Home() {
                   View Quizzes
                 </button>
           </div>
-        </StudentCard>
+        </Card>
       ))}
       </div>
       )}
@@ -106,7 +102,7 @@ function Home() {
         <>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
           {exams.map((exam) => (
-            <StudentCard
+            <Card
             height="100%"
             width="100%"
             borderStyle="normalselected"
@@ -127,7 +123,7 @@ function Home() {
                   Start Quiz
                 </button>
               </div>
-           </StudentCard>
+           </Card>
           ))}
           </div>
         </>)}

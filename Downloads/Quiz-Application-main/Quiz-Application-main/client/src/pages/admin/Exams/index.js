@@ -55,8 +55,8 @@ function Exams() {
       dataIndex: "duration",
     },
     {
-      title: "Category",
-      dataIndex: "category",
+      title: "Subject",
+      dataIndex: "subject",
     },
     {
       title: "Total Marks",
@@ -88,10 +88,10 @@ function Exams() {
   }, []);
   return (
     <div>
-      <div className="flex justify-between mt-2 items-end">
-        <PageTitle title="Profile" />
-
+      <div style={{display:"grid"}}>
+        <PageTitle title="Quizzes" />
         <button
+          style={{placeSelf:"end", marginRight:"2vw"}}
           className="primary-outlined-btn flex items-center"
           onClick={() => navigate("/admin/exams/add")}
         >
@@ -99,9 +99,11 @@ function Exams() {
           Add Exam
         </button>
       </div>
+      <div style={{margin:"0vh 2vw"}}>
       <div className="divider"></div>
 
       <Table columns={columns} dataSource={exams} />
+      </div>
     </div>
   );
 }

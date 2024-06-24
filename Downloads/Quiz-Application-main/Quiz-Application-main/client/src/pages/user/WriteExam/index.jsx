@@ -93,20 +93,21 @@ function WriteExam() {
   const startTimer = () => {
     let totalSeconds = examData.duration;
     const intervalId = setInterval(() => {
-      if (totalSeconds > 0) {
-        totalSeconds = totalSeconds - 1;
-        setSecondsLeft(totalSeconds);
-      } else {
-        setTimeUp(true);
-      }
+        if (totalSeconds > 0) {
+            totalSeconds = totalSeconds - 1;
+            setSecondsLeft(totalSeconds);
+        } else {
+            setTimeUp(true);
+            clearInterval(intervalId);
+        }
     }, 1000);
     setIntervalId(intervalId);
-  };
+};
 
   useEffect(() => {
     if (timeUp && view === "questions") {
-      clearInterval(intervalId);
       calculateResult();
+      clearInterval(intervalId);
     }
   }, [timeUp]);
 
@@ -231,10 +232,7 @@ function WriteExam() {
                   <button
                     className="primary-outlined-btn"
                     onClick={() => {
-                      setView("instructions");
-                      setSelectedQuestionIndex(0);
-                      setSelectedOptions({});
-                      setSecondsLeft(examData.duration);
+                      window.location.reload();
                     }}
                   >
                     Retake Exam
@@ -314,10 +312,7 @@ function WriteExam() {
               <button
                 className="primary-contained-btn"
                 onClick={() => {
-                  setView("instructions");
-                  setSelectedQuestionIndex(0);
-                  setSelectedOptions({});
-                  setSecondsLeft(examData.duration);
+                  window.location.reload();
                 }}
               >
                 Retake Exam
