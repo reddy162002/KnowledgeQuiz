@@ -55,8 +55,8 @@ function Exams() {
       dataIndex: "duration",
     },
     {
-      title: "Category",
-      dataIndex: "category",
+      title: "Subject",
+      dataIndex: "subject",
     },
     {
       title: "Total Marks",

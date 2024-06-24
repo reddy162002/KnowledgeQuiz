@@ -164,9 +164,9 @@ function AddEditExam() {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="Category" name="category">
+                  <Form.Item label="Subject" name="subject">
                     <select name="" id="">
-                      <option value="">Select Category</option>
+                      <option value="">Select Subject</option>
                       <option value="Javascript">Javascript</option>
                       <option value="React">React</option>
                       <option value="Node">Node</option>
