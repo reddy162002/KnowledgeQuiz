@@ -250,11 +250,23 @@ function WriteExam() {
             </div>
             <div className="lottie-animation">
             {result.verdict === "Pass" && (
-                <video src="https://assets2.pass.png" />
+                <lottie-player
+                  src="https://assets2.lottiefiles.com/packages/lf20_ya4ycrti.json"
+                  background="transparent"
+                  speed="1"
+                  loop
+                  autoplay
+                ></lottie-player>
               )}
 
               {result.verdict === "Fail" && (
-                <video src="https://assets4.fail.png" />
+                <lottie-player
+                  src="https://assets4.lottiefiles.com/packages/lf20_qp1spzqv.json"
+                  background="transparent"
+                  speed="1"
+                  loop
+                  autoplay
+                ></lottie-player>
               )}
             </div>
           </div>
