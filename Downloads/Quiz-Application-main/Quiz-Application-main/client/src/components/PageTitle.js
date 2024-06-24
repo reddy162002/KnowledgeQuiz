@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getUserInfo } from '../apicalls/users';
 import styles from "./PageTitle.module.css";
+import { getUserInfo } from '../apicalls/users';
 
 function PageTitle({title}) {
   const [user, setUser] = useState();
