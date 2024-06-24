@@ -167,14 +167,11 @@ function AddEditExam() {
                   <Form.Item label="Subject" name="subject">
                     <select name="" id="">
                       <option value="">Select Subject</option>
-                      <option value="Javascript">Javascript</option>
-                      <option value="React">React</option>
-                      <option value="Node">Node</option>
-                      <option value="MongoDB">MongoDB</option>
-                      <option value="GK">GK</option>
-                      <option value="ML">Machine Learning</option>
-                      <option value="ebusiness">E-business</option>
-
+                      <option value="666b32b97ce3b46c2c6dfbbb">Java</option>
+                      <option value="6668243d563ac32c375c05d4">React</option>
+                      <option value="666823e0563ac32c375c05d2">Python</option>
+                      <option value="666b32c77ce3b46c2c6dfbbc">C Language</option>
+                      <option value="666b32d07ce3b46c2c6dfbbd">Google Go</option>
                     </select>
                   </Form.Item>
                 </Col>
