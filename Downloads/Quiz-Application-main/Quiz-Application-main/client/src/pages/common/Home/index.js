@@ -76,14 +76,41 @@ function Home() {
       <div style={{margin:"1vh 1vw"}}>
         <div style={{padding:"0vh 2vh"}}><PageTitle title={!subjectQuiz ? "Subjects" : "Quizzes"}/></div>
       <div style={{padding:"0.5vh 2vh"}}>
-
-      <Row gutter={[16, 16]}>
+      {!subjectQuiz && (
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
+          {subjects.map((exam) => (
+           <Card
+           height="100%"
+           width="100%"
+           borderStyle="normalselected"
+         >
+          <div style={{display:"grid", gap:"2vh", padding:"1.5vh"}}>
+                <h1 style={{fontSize:"2.5vh"}}>{exam?.name}</h1>
+                <img style={{placeSelf:"center", height:"10vh", width:"10vw"}} src= {exam.image} />
+                <button
+                  className="primary-outlined-btn"
+                  onClick={() => handleSubjectQuiz(exam.name)}
+                >
+                  View Quizzes
+                </button>
+          </div>
+        </Card>
+      ))}
+      </div>
+      )}
+        {subjectQuiz && (
+        <>
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"1vw"}}>
           {exams.map((exam) => (
-            <Col span={6}>
-              <div className="card-lg flex flex-col gap-1 p-2">
+            <Card
+            height="100%"
+            width="100%"
+            borderStyle="normalselected"
+          >
+              <div style={{display:"grid", gap:"1vh", padding:"1.5vh"}}>
                 <h1 className="text-2xl">{exam?.name}</h1>
 
-                <h1 className="text-md">Category : {exam.category}</h1>
+                <h1 className="text-md">Subject : {exam.subject}</h1>
 
                 <h1 className="text-md">Total Marks : {exam.totalMarks}</h1>
                 <h1 className="text-md">Passing Marks : {exam.passingMarks}</h1>
@@ -93,12 +120,13 @@ function Home() {
                   className="primary-outlined-btn"
                   onClick={() => navigate(`/user/write-exam/${exam._id}`)}
                 >
-                  Start Exam
+                  Start Quiz
                 </button>
               </div>
-            </Col>
+           </Card>
           ))}
-        </Row>
+          </div>
+        </>)}
        
         </div>
 
