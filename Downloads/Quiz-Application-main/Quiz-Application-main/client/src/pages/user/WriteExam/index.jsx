@@ -249,24 +249,12 @@ function WriteExam() {
               </div>
             </div>
             <div className="lottie-animation">
-              {result.verdict === "Pass" && (
-                <lottie-player
-                  src="https://assets2.lottiefiles.com/packages/lf20_ya4ycrti.json"
-                  background="transparent"
-                  speed="1"
-                  loop
-                  autoplay
-                ></lottie-player>
+            {result.verdict === "Pass" && (
+                <img src="https://assets2.pass.png" />
               )}
 
               {result.verdict === "Fail" && (
-                <lottie-player
-                  src="https://assets4.lottiefiles.com/packages/lf20_qp1spzqv.json"
-                  background="transparent"
-                  speed="1"
-                  loop
-                  autoplay
-                ></lottie-player>
+                <img src="https://assets4.fail.png" />
               )}
             </div>
           </div>
