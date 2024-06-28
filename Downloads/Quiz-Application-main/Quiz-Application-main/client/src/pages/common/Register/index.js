@@ -1,67 +1,93 @@
-import { Form, message } from "antd";
-import React, {useState} from "react";
-import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../../../apicalls/users";
-import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
+import React, { useState } from "react";
+import { auth, db } from "../../../components/firebase";
+import { setDoc, doc } from "firebase/firestore";
+import { toast } from "react-toastify";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import "./index.css";
+import DynamicForm from "../../../components/DynamicForm/dynamicForm";
 
 function Register() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [dob, setDob] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
 
-  const [disabledButton, setDisabledButton] = useState(false);
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setIsDisabled(true); 
+    try {
+      if (confirmPassword !== password) {
+        setIsDisabled(false); 
+        return;
+      }
+      await createUserWithEmailAndPassword(auth, email, password);
+      const user = auth.currentUser;
+      if (user) {
+        await setDoc(doc(db, "Users", user.uid), {
+          email: user.email,
+          name: name,
+          dateOfBirth: dob,
+          photo: ""
+        });
+      }
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const isValidPassword = (password) => {
-    const numberRegex = /\d/;
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>_\-+=\/\\[\];'~ ]/;
-    return numberRegex.test(password) && specialCharRegex.test(password);
-  };
-
-  const onFinish = async (values) => {
-    const { name, email, password, confirmPassword } = values;
-
-    if (!validateEmail(email)) {
-      message.error("Please enter a valid email address.");
-      return;
-    }
-
-    if (!isValidPassword(password)) {
-      message.error("Password must contain at least one number and one special character.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      message.error("Passwords do not match.", {
-        autoClose: 3000,
+      toast.success("User Registered Successfully!!", {
         position: "top-center",
       });
-      return;
-    }
-
-    setDisabledButton(true);
-
-    try {
-      dispatch(ShowLoading());
-      const response = await registerUser(values);
-
-      dispatch(HideLoading());
-      if (response.success) {
-        message.success(response.message);
-        navigate("/login");
-      } else {
-        message.error(response.message);
-      }
+      
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
     } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
+      toast.error(error.message, {
+        position: "top-center",
+      });
     } finally {
-      setDisabledButton(false);
+      setIsDisabled(false);
     }
+  };
+
+  const formProps = {
+    inputKeys: ["name", "dob", "email", "password", "confirmPassword"],
+    labels: {
+      name: "Name",
+      dob: "Date of Birth",
+      email: "Email Address",
+      password: "Password",
+      confirmPassword: "Confirm Password",
+    },
+    inputTypes: {
+      name: "text",
+      dob: "date",
+      email: "text",
+      password: "password",
+      confirmPassword: "password",
+    },
+    values: {
+      name: name,
+      dob: dob,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+    },
+    columns: 1,
+    inputWidth: 100,
+    onChangeHandlers: {
+      name: (value) => setName(value),
+      dob: (value) => setDob(value),
+      email: (value) => setEmail(value),
+      password: (value) => setPassword(value),
+      confirmPassword: (value) => setConfirmPassword(value),
+    },
+    placeholders: {
+      name: "Enter your Name",
+      email: "Enter your email",
+      password: "Enter password",
+      confirmPassword: "Enter password again",
+    },
+    validationRules: {},
   };
 
   return (
@@ -69,89 +95,21 @@ function Register() {
       <div className="card w-400 p-3 bg-white">
         <div className="flex flex-col">
           <h1 className="text-2xl">
-            QUIZ - REGISTER<i class="ri-user-add-line"></i>
+            QUIZ - REGISTER<i className="ri-user-add-line"></i>
           </h1>
           <div className="divider"></div>
-          <Form layout="vertical" className="mt-2" onFinish={onFinish}>
-            <Form.Item name="name" label="Name"
-             rules={[
-              { required: true, message: "Please input your Name!" },
-            ]}>
-
-              <input type="text" />
-            </Form.Item>
-
-            <Form.Item
-              name="dob"
-              label="Date of Birth"
-            >
-              <input type="date" max={new Date().toISOString().split("T")[0]}/>
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Please input your email!" },
-              ]}
-            >
-              <input type="text" />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              label="Password"
-              rules={[
-                { required: true, message: "Please input your password!" },
-                () => ({
-                  validator(_, value) {
-                    if (!value || isValidPassword(value)) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error(
-                        "Password must contain at least one number and one special character."
-                      )
-                    );
-                  },
-                }),
-              ]}
-            >
-            <input type="password" />
-            </Form.Item>
-
-            <Form.Item
-              name="confirmPassword"
-              label="Confirm Password"
-              dependencies={["password"]}
-              rules={[
-                {
-                  required: true,
-                  message: "Please confirm your password!",
-                },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("The two passwords do not match!")
-                    );
-                  },
-                }),
-              ]}
-            >
-            <input type="password" />
-            </Form.Item>
-
-            <div className="flex flex-col gap-2">
-              <button
-                type="submit"
-                className="primary-contained-btn mt-2 w-100"
-              >
-                Register
+          <form onSubmit={handleRegister}>
+            <h3> Register </h3>
+            <DynamicForm {...formProps} />
+            <div style={{ display: "flex", justifyContent: "space-between", margin: "3vh 2vw 0vh 2vw" }}>
+              <p className="forgot-password text-right">
+                Already registered? Then <a style={{ color: "white", fontWeight: "900", textDecoration: "none" }} href="/login">Login</a>
+              </p>
+              <button className="submitButton" type="submit" disabled={isDisabled}>
+                {isDisabled ? 'Signing Up...' : 'Sign Up'}
               </button>
-              <Link to="/login">Already a member? Login</Link>
             </div>
-          </Form>
+          </form>
         </div>
       </div>
     </div>

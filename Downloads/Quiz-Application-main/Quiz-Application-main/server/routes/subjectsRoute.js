@@ -24,7 +24,7 @@ router.post("/subject", async (req, res) => {
 
 
 // get = subjects
-router.get("/get-all-subjects", authMiddleware, async (req, res) => {
+router.get("/get-all-subjects", async (req, res) => {
     try {
       const subjects = await subject.find();
       console.log(subjects);
