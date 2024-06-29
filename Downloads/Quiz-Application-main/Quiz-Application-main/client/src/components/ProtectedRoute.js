@@ -4,10 +4,11 @@ import { getUserInfo } from "../apicalls/users";
 import { useDispatch, useSelector } from "react-redux";
 import { SetUser } from "../redux/usersSlice.js";
 import { useNavigate } from "react-router-dom";
+import { auth, db } from "./firebase.js";
+import { collection, getDocs } from "firebase/firestore";
 import { HideLoading, ShowLoading } from "../redux/loaderSlice";
 
 function ProtectedRoute({ children }) {
-  const { user } = useSelector((state) => state.users);
   const [menu, setMenu] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -89,36 +90,51 @@ function ProtectedRoute({ children }) {
       },
     },
   ];
-
-  const getUserData = async () => {
+  useEffect(() => {
+  const fetchSubjects = async () => {
     try {
-      dispatch(ShowLoading());
-      const response = await getUserInfo();
-      dispatch(HideLoading());
-      if (response.success) {
-        dispatch(SetUser(response.data));
-        if (response.data.isAdmin) {
-          setMenu(adminMenu);
-        } else {
-          setMenu(userMenu);
-        }
-      } else {
-        message.error(response.message);
-      }
+      const querySnapshot = await getDocs(collection(db, "Users"));
+      const userData = querySnapshot.docs;
+      const menu = userData.role === "admin" ? adminMenu : userMenu;
+      setMenu(menu);
     } catch (error) {
-      navigate("/login");
-      dispatch(HideLoading());
-      message.error(error.message);
+      console.error("Error fetching subjects: ", error);
     }
   };
 
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      getUserData();
+  fetchSubjects();
+}, []);
+const [currentUser, setCurrentUser] = useState(null);
+useEffect(() => {
+  const unsubscribe = auth.onAuthStateChanged((user) => {
+    if (user) {
+      setCurrentUser(user);
     } else {
-      navigate("/login");
+      setCurrentUser(null);
     }
-  }, []);
+  });
+  return () => unsubscribe();
+}, []);
+
+const fetchData = async () => {
+  try {
+    if (currentUser) {
+      const querySnapshot = await getDocs(collection(db, "Users"));
+      querySnapshot.forEach((doc) => {
+        if (doc.id === currentUser.uid) {
+          const menu = doc.data().role === "admin" ? adminMenu : userMenu;
+          setMenu(menu);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+};
+
+useEffect(() => {
+  fetchData();
+}, [currentUser]);
 
   const activeRoute = window.location.pathname;
 
@@ -170,16 +186,6 @@ function ProtectedRoute({ children }) {
           </div>
         </div>
         <div className="body">
-          {/* <div className="header flex justify-between">
-           
-            <h1 className="text-2xl text-white">QUIZ Application</h1>
-            <div>
-              <div className="flex gap-1 items-center">
-                <h1 className="text-md text-white">{user?.name}</h1>
-              </div>
-              <span>Role : {user?.isAdmin ? "Admin" : "User"}</span>
-            </div>
-          </div> */}
           <div className="content">{children}</div>
         </div>
       </div>

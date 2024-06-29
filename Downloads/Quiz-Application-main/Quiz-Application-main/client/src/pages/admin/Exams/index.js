@@ -89,7 +89,7 @@ function Exams() {
   return (
     <div>
       <div style={{display:"grid"}}>
-        <PageTitle title="Quizzes" />
+        <PageTitle title="Manage Quizzes" />
         <button
           style={{placeSelf:"end", marginRight:"2vw"}}
           className="primary-outlined-btn flex items-center"

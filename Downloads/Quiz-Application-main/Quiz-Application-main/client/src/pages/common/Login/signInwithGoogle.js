@@ -16,7 +16,6 @@ function SignInwithGoogle() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          // Update only if necessary fields are missing
           const userData = docSnap.data();
           if (!userData.firstName || !userData.lastName || !userData.photo) {
             await updateDoc(docRef, {
@@ -27,7 +26,6 @@ function SignInwithGoogle() {
             });
           }
         } else {
-          // Set initial data if user document doesn't exist
           await setDoc(docRef, {
             firstName: user.displayName.split(' ')[0],
             lastName: user.displayName.split(' ')[1] || '',
