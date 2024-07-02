@@ -12,8 +12,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/common/Home";
 import Exams from "./pages/admin/Exams";
 import AddEditExam from "./pages/admin/Exams/AddEditExam";
-import Loader from "./components/Loader";
-import { useSelector } from "react-redux";
+import { useState } from "react";
+import { auth } from "./components/firebase";
+import React, { useEffect } from "react";
 import WriteExam from "./pages/user/WriteExam";
 import UserReports from "./pages/user/UserReports";
 import AdminReports from "./pages/admin/AdminReports";
@@ -21,25 +22,32 @@ import WhackAMole from "./pages/games/whackAMole";
 import ConnectFourGame from "./pages/games/connect4";
 
 function App() {
-  const { loading } = useSelector((state) => state.loader);
+  const [user, setUser] = useState();
+  useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+  });
   return (
     <>
-      {loading && <Loader />}
       <BrowserRouter>
         <Routes>
+
+          <Route path="/" element={user ? <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute> : <Login />} />
+        <Route
+                path="/home"
+                element={user ? <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute> : <Login />}
+              />
+
           {/* Common Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           {/* User Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/user/write-exam/:id"
             element={
