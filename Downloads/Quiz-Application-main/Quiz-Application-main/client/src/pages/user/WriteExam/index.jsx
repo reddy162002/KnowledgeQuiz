@@ -142,15 +142,16 @@ function WriteExam() {
     setTimeUp(true);
   };
 
-  // Function to resume game
-  const resumeGame = () => {
-    setView("games");
-    startTimer();
-  };
-
+  
   const [showModal, setShowModal] = useState();
   const handleModalClose = () => {
     setShowModal(false);
+    setView(questions);
+  };
+  // Function to resume game
+  const resumeGame = () => {
+    setShowModal(false);
+    setView("questions");
   };
   // Effect to handle switching to questions view after 30 seconds in games view
   useEffect(() => {
@@ -158,11 +159,12 @@ function WriteExam() {
       const switchToQuestionsTimer = setTimeout(() => {
         setShowModal(true);
         setView("questions");
-      }, 30000);
+      }, 20000);
       
       return () => clearTimeout(switchToQuestionsTimer);
     }
-  }, [examData, view]);
+  }, []);
+  // }, [examData, view]);
 
   // Conditional rendering based on examData existence
   return (
