@@ -1,50 +1,61 @@
+import React, { useEffect, useState } from "react";
 import { message, Table } from "antd";
-import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { deleteExamById, getAllExams } from "../../../apicalls/exams";
+import { collection, doc, getDocs, deleteDoc } from "firebase/firestore";
+import { db } from "../../../components/firebase";
 import PageTitle from "../../../components/PageTitle";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 
 function Exams() {
   const navigate = useNavigate();
-  const [exams, setExams] = React.useState([]);
+  const [exams, setExams] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const dispatch = useDispatch();
 
   const getExamsData = async () => {
     try {
       dispatch(ShowLoading());
-      const response = await getAllExams();
+      const querySnapshot = await getDocs(collection(db, "Quizzes"));
+      const examsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setExams(examsData);
       dispatch(HideLoading());
-      if (response.success) {
-        setExams(response.data);
-      } else {
-        message.error(response.message);
-      }
     } catch (error) {
       dispatch(HideLoading());
-      message.error(error.message);
+      message.error("Error fetching exams: " + error.message);
+    }
+  };
+
+  const getSubjectsData = async () => {
+    try {
+      dispatch(ShowLoading());
+      const querySnapshot = await getDocs(collection(db, "subjects"));
+      const subjectsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSubjects(subjectsData);
+      dispatch(HideLoading());
+    } catch (error) {
+      dispatch(HideLoading());
+      message.error("Error fetching subjects: " + error.message);
     }
   };
 
   const deleteExam = async (examId) => {
     try {
       dispatch(ShowLoading());
-      const response = await deleteExamById({
-        examId,
-      });
-      dispatch(HideLoading());
-      if (response.success) {
-        message.success(response.message);
-        getExamsData();
-      } else {
-        message.error(response.message);
-      }
+      await deleteDoc(doc(db, "Quizzes", examId));
+      message.success("Exam deleted successfully.");
+      getExamsData();
     } catch (error) {
       dispatch(HideLoading());
-      message.error(error.message);
+      message.error("Error deleting exam: " + error.message);
     }
   };
+
+  const getSubjectName = (subjectId) => {
+    const subject = subjects.find((subject) => subject.id === subjectId);
+    return subject ? subject.name : "Unknown";
+  };
+
   const columns = [
     {
       title: "Exam Name",
@@ -57,6 +68,7 @@ function Exams() {
     {
       title: "Subject",
       dataIndex: "subject",
+      render: (text, record) => getSubjectName(record.subject),
     },
     {
       title: "Total Marks",
@@ -73,25 +85,28 @@ function Exams() {
         <div className="flex gap-2">
           <i
             className="ri-pencil-line"
-            onClick={() => navigate(`/admin/exams/edit/${record._id}`)}
+            onClick={() => navigate(`/admin/exams/edit/${record.id}`)}
           ></i>
           <i
             className="ri-delete-bin-line"
-            onClick={() => deleteExam(record._id)}
+            onClick={() => deleteExam(record.id)}
           ></i>
         </div>
       ),
     },
   ];
+
   useEffect(() => {
     getExamsData();
+    getSubjectsData();
   }, []);
+
   return (
     <div>
-      <div style={{display:"grid"}}>
+      <div style={{ display: "grid" }}>
         <PageTitle title="Manage Quizzes" />
         <button
-          style={{placeSelf:"end", marginRight:"2vw"}}
+          style={{ placeSelf: "end", marginRight: "2vw" }}
           className="primary-outlined-btn flex items-center"
           onClick={() => navigate("/admin/exams/add")}
         >
@@ -99,10 +114,9 @@ function Exams() {
           Add Exam
         </button>
       </div>
-      <div style={{margin:"0vh 2vw"}}>
-      <div className="divider"></div>
-
-      <Table columns={columns} dataSource={exams} />
+      <div style={{ margin: "0vh 2vw" }}>
+        <div className="divider"></div>
+        <Table columns={columns} dataSource={exams} rowKey="id" />
       </div>
     </div>
   );

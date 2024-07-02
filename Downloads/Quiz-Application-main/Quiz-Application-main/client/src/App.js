@@ -17,7 +17,8 @@ import { useSelector } from "react-redux";
 import WriteExam from "./pages/user/WriteExam";
 import UserReports from "./pages/user/UserReports";
 import AdminReports from "./pages/admin/AdminReports";
-
+import WhackAMole from "./pages/games/whackAMole";
+import ConnectFourGame from "./pages/games/connect4";
 
 function App() {
   const { loading } = useSelector((state) => state.loader);
@@ -87,6 +88,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/whackgame"
+            element={
+              <ProtectedRoute>
+                <WhackAMole />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/connectFour"
+            element={
+              <ProtectedRoute>
+                <ConnectFourGame />
               </ProtectedRoute>
             }
           />

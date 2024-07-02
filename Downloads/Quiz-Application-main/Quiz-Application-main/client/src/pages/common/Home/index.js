@@ -35,7 +35,7 @@ function Home() {
   const fetchSubjectQuizzes = async (subjectId) => {
     try {
       setLoadingQuizzes(true);
-      const q = query(collection(db, 'Quizzes'), where('subject', '==', `subjects/${subjectId}`));
+      const q = query(collection(db, 'Quizzes'), where('subject', '==', `${subjectId}`));
       const querySnapshot = await getDocs(q);
       const quizzesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setQuizzes(quizzesData);

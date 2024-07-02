@@ -1,21 +1,24 @@
 import { Form, message, Modal } from "antd";
 import React from "react";
 import { useDispatch } from "react-redux";
-import { addQuestionToExam, editQuestionById } from "../../../apicalls/exams";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
+import { db } from "../../../components/firebase";
+import { doc, addDoc, updateDoc, arrayUnion, collection, getDoc } from "firebase/firestore";
 
 function AddEditQuestion({
   showAddEditQuestionModal,
   setShowAddEditQuestionModal,
   refreshData,
   examId,
-    selectedQuestion,
-    setSelectedQuestion
+  selectedQuestion,
+  setSelectedQuestion
 }) {
   const dispatch = useDispatch();
+
   const onFinish = async (values) => {
     try {
       dispatch(ShowLoading());
+
       const requiredPayload = {
         name: values.name,
         correctOption: values.correctOption,
@@ -25,19 +28,33 @@ function AddEditQuestion({
           C: values.C,
           D: values.D,
         },
-        exam: examId,
+        quiz: examId,
       };
 
-      let response
-        if(selectedQuestion){
-            response = await editQuestionById({
-                ...requiredPayload,
-                questionId: selectedQuestion._id
-            })
+      let response;
+
+      if (selectedQuestion) {
+        const questionRef = doc(db, "Questions", selectedQuestion.id);
+        const questionDoc = await getDoc(questionRef);
+        if (questionDoc.exists()) {
+          await updateDoc(questionRef, requiredPayload);
+          response = { success: true, message: "Question updated successfully" };
+        } else {
+          response = { success: false, message: "Question not found" };
         }
-        else{
-            response = await addQuestionToExam(requiredPayload);
-        }
+      } else {
+        // Add new question with a generated ID
+        const questionRef = await addDoc(collection(db, "Questions"), requiredPayload);
+        
+        // Update associated exam with new question ID
+        const examRef = doc(db, "Quizzes", examId);
+        await updateDoc(examRef, {
+          questions: arrayUnion(questionRef.id),
+        });
+        
+        response = { success: true, message: "Question added successfully" };
+      }
+
       if (response.success) {
         message.success(response.message);
         refreshData();
@@ -45,8 +62,10 @@ function AddEditQuestion({
       } else {
         message.error(response.message);
       }
-      setSelectedQuestion(null)
+
+      setSelectedQuestion(null);
       dispatch(HideLoading());
+
     } catch (error) {
       dispatch(HideLoading());
       message.error(error.message);
@@ -59,18 +78,20 @@ function AddEditQuestion({
       visible={showAddEditQuestionModal}
       footer={false}
       onCancel={() => {
-        setShowAddEditQuestionModal(false)
-        setSelectedQuestion(null)
+        setShowAddEditQuestionModal(false);
+        setSelectedQuestion(null);
       }}
     >
-      <Form onFinish={onFinish} layout="vertical"
+      <Form
+        onFinish={onFinish}
+        layout="vertical"
         initialValues={{
-            name: selectedQuestion?.name,
-            A: selectedQuestion?.options?.A,
-            B: selectedQuestion?.options?.B,
-            C: selectedQuestion?.options?.C,
-            D: selectedQuestion?.options?.D,
-            correctOption: selectedQuestion?.correctOption,
+          name: selectedQuestion?.name,
+          A: selectedQuestion?.options?.A,
+          B: selectedQuestion?.options?.B,
+          C: selectedQuestion?.options?.C,
+          D: selectedQuestion?.options?.D,
+          correctOption: selectedQuestion?.correctOption,
         }}
       >
         <Form.Item name="name" label="Question">
