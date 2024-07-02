@@ -1,3 +1,4 @@
+// src/components/WriteExam.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,6 +25,19 @@ function WriteExam() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const params = useParams();
+
+  const [showModal, setShowModal] = useState(false);
+  const [winner, setWinner] = useState(null);
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setView("questions");
+  };
+
+  const resumeGame = () => {
+    setShowModal(false);
+    setView("questions");
+  };
 
   // Fetch exam data and questions based on params.id
   useEffect(() => {
@@ -62,7 +76,6 @@ function WriteExam() {
     }
   }, [params.id]);
 
-  
   const calculateResult = async () => {
     try {
       let correctAnswers = [];
@@ -120,37 +133,6 @@ function WriteExam() {
   };
 
   // Effect to handle timer expiration
-
-
-  // Function to handle submitting answers
-  const submitAnswers = () => {
-    clearInterval(intervalId);
-    setTimeUp(true);
-  };
-
-  
-  const [showModal, setShowModal] = useState();
-  const handleModalClose = () => {
-    setShowModal(false);
-    setView(questions);
-  };
-  // Function to resume game
-  const resumeGame = () => {
-    setShowModal(false);
-    setView("questions");
-  };
-  // Effect to handle switching to questions view after 30 seconds in games view
-  useEffect(() => {
-    if (examData && viewSet === "games") {
-      const switchToQuestionsTimer = setTimeout(() => {
-        setShowModal(true);
-        setView("questions");
-      }, 2000);
-      
-      return () => clearTimeout(switchToQuestionsTimer);
-    }
-  }, []);
-  // }, [examData, view]);
   useEffect(() => {
     if (timeUp && view === "games") {
       setView("questions");
@@ -159,6 +141,15 @@ function WriteExam() {
       clearInterval(intervalId);
     }
   }, [timeUp, view, intervalId]);
+
+  // Effect to handle opening modal when winner is "Red"
+  useEffect(() => {
+    if (winner === "Red") {
+      setShowModal(true);
+      setView("questions");
+    }
+  }, [winner]);
+
   // Conditional rendering based on examData existence
   return (
     examData && (
@@ -172,83 +163,108 @@ function WriteExam() {
         )}
 
         {viewSet === "games" && (
-          <ConnectFourGame />
+          <ConnectFourGame setWinner={setWinner} />
         )}
- <Modal
-                isOpen={showModal}
-                onClose={handleModalClose}
-                header="Quiz"
-                size="xlarge"
-              >
-        {view === "questions" && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between">
-              <h1 className="text-2xl">
-                {selectedQuestionIndex + 1} : {questions[selectedQuestionIndex]?.name}
-              </h1>
 
-              <div className="timer">
-                <span className="text-2xl">{secondsLeft}</span>
-              </div>
-            </div>
-
+        <Modal
+          isOpen={showModal}
+          onClose={handleModalClose}
+          header="Quiz"
+          size="xlarge"
+        >
+          {view === "questions" && (
             <div className="flex flex-col gap-2">
-              {questions[selectedQuestionIndex]?.options &&
-                Object.keys(questions[selectedQuestionIndex].options).map((option, index) => (
-                  <div
-                    className={`flex gap-2 flex-col ${
-                      selectedOptions[selectedQuestionIndex] === option
-                        ? "selected-option"
-                        : "option"
-                    }`}
-                    key={index}
+              <div className="flex justify-between">
+                <h1 className="text-2xl">
+                  {selectedQuestionIndex + 1} : {questions[selectedQuestionIndex]?.name}
+                </h1>
+
+                <div className="text-2xl">
+                  {secondsLeft > 0 && (
+                    <div className="countdown">
+                      {Math.floor(secondsLeft / 60).toString().padStart(2, "0")}:
+                      {Math.floor(secondsLeft % 60).toString().padStart(2, "0")}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="divider"></div>
+
+              <div className="flex flex-col gap-2">
+                {Object.keys(questions[selectedQuestionIndex]?.options).map((option, index) => {
+                  return (
+                    <div
+                      key={option}
+                      className={`flex gap-2 flex-col ${
+                        selectedOptions[selectedQuestionIndex] === option
+                          ? "selected-option"
+                          : "option"
+                      }`}
+                      onClick={() => {
+                        setSelectedOptions({
+                          ...selectedOptions,
+                          [selectedQuestionIndex]: option,
+                        });
+                      }}
+                    >
+                      <h1 className="text-xl">
+                        {option} : {questions[selectedQuestionIndex]?.options[option]}
+                      </h1>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-between">
+                {selectedQuestionIndex > 0 && (
+                  <button
+                    className="primary-outline-btn"
                     onClick={() => {
-                      setSelectedOptions({
-                        ...selectedOptions,
-                        [selectedQuestionIndex]: option,
-                      });
+                      setSelectedQuestionIndex(selectedQuestionIndex - 1);
                     }}
                   >
-                    <h1 className="text-xl">
-                      {option} : {questions[selectedQuestionIndex].options[option]}
-                    </h1>
-                  </div>
-                ))}
+                    Previous
+                  </button>
+                )}
+
+                {selectedQuestionIndex < questions.length - 1 && (
+                  <button
+                    className="primary-contained-btn"
+                    onClick={() => {
+                      setSelectedQuestionIndex(selectedQuestionIndex + 1);
+                    }}
+                  >
+                    Next
+                  </button>
+                )}
+
+                {selectedQuestionIndex === questions.length - 1 && (
+                  <button className="primary-contained-btn" onClick={calculateResult}>
+                    Submit
+                  </button>
+                )}
+              </div>
             </div>
+          )}
 
-            <div className="flex justify-between">
-              {selectedQuestionIndex > 0 && (
-                <button
-                  className="primary-outlined-btn"
-                  onClick={() => setSelectedQuestionIndex(selectedQuestionIndex - 1)}
-                >
-                  Previous
-                </button>
-              )}
+          {/* {view === "result" && (
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl">Results</h1>
+              <div className="divider"></div>
 
-              {selectedQuestionIndex < questions.length - 1 && (
-                <button
-                  className="primary-contained-btn"
-                  onClick={() => setSelectedQuestionIndex(selectedQuestionIndex + 1)}
-                >
-                  Next
-                </button>
-              )}
+              <h1 className="text-md">Total Questions : {questions.length}</h1>
+              <h1 className="text-md">Correct Answers : {result.correctAnswers?.length}</h1>
+              <h1 className="text-md">Wrong Answers : {result.wrongAnswers?.length}</h1>
+              <h1 className="text-md">Obtained Marks : {result.obtainedMarks}</h1>
+              <h1 className="text-md">Verdict : {result.verdict}</h1>
 
-              {selectedQuestionIndex === questions.length - 1 && (
-                <button
-                  className="primary-contained-btn"
-                  onClick={submitAnswers}
-                >
-                  Submit
-                </button>
-              )}
+              <button className="primary-contained-btn" onClick={resumeGame}>
+                Resume Game
+              </button>
             </div>
-          </div>
-        )}
-
-        {/* Display result view */}
-        {view === "result" && (
+          )} */}
+           {view === "result" && (
           <div className="flex items-center mt-2 justify-center result">
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl">RESULT</h1>
@@ -309,14 +325,12 @@ function WriteExam() {
             })}
 
             <div className="flex justify-center gap-2">
-              <button
-                className="primary-outlined-btn"
-                onClick={() => {
-                  navigate("/");
-                }}
-              >
-                Close
-              </button>
+            <button
+                    className="primary-outlined-btn"
+                    onClick={resumeGame}
+                  >
+                    Resume Game
+                  </button>
               <button
                 className="primary-contained-btn"
                 onClick={() => {
