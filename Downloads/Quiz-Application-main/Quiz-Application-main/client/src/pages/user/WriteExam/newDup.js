@@ -6,8 +6,7 @@ import { db } from "../../../components/firebase";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import { message } from "antd";
 import Instructions from "./Instructions";
-import ConnectFourGame from "../../games/connect4";
-import Modal from "../../../components/Modal/modal";
+import ConnectFourGame from "../../games/connect4"; // Import ConnectFourGame component
 
 function WriteExam() {
   const [examData, setExamData] = useState(null);
@@ -15,7 +14,6 @@ function WriteExam() {
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [result, setResult] = useState({});
-  const [viewSet, setViewSet] = useState("instructions");
   const [view, setView] = useState("instructions");
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [timeUp, setTimeUp] = useState(false);
@@ -128,9 +126,7 @@ function WriteExam() {
 
   // Effect to handle timer expiration
   useEffect(() => {
-    if (timeUp && view === "games") {
-      setView("questions");
-    } else if (timeUp && view === "questions") {
+    if (timeUp && view === "questions") {
       calculateResult();
       clearInterval(intervalId);
     }
@@ -145,24 +141,8 @@ function WriteExam() {
   // Function to resume game
   const resumeGame = () => {
     setView("games");
-    startTimer();
+    startTimer(); // Restart timer when returning to game view
   };
-
-  const [showModal, setShowModal] = useState();
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-  // Effect to handle switching to questions view after 30 seconds in games view
-  useEffect(() => {
-    if (examData && viewSet === "games") {
-      const switchToQuestionsTimer = setTimeout(() => {
-        setShowModal(true);
-        setView("questions");
-      }, 30000);
-      
-      return () => clearTimeout(switchToQuestionsTimer);
-    }
-  }, [examData, view]);
 
   // Conditional rendering based on examData existence
   return (
@@ -172,19 +152,14 @@ function WriteExam() {
         <h1 className="text-center">{examData.name}</h1>
         <div className="divider"></div>
 
-        {viewSet === "instructions" && (
-          <Instructions examData={examData} setView={setViewSet} startTimer={startTimer} />
+        {view === "instructions" && (
+          <Instructions examData={examData} setView={setView} startTimer={startTimer} />
         )}
 
-        {viewSet === "games" && (
+        {view === "games" && (
           <ConnectFourGame />
         )}
- <Modal
-                isOpen={showModal}
-                onClose={handleModalClose}
-                header="Quiz"
-                size="xlarge"
-              >
+
         {view === "questions" && (
           <div className="flex flex-col gap-2">
             <div className="flex justify-between">
@@ -283,57 +258,77 @@ function WriteExam() {
                 </div>
               </div>
             </div>
-           
-            
+            <div className="lottie-animation">
+              {result.verdict === "Pass" && (
+                <lottie-player
+                  src="https://assets2.lottiefiles.com/packages/lf20_ya4ycrti.json"
+                  background="transparent"
+                  speed="1"
+                  loop
+                  autoplay
+                ></lottie-player>
+              )}
+
+              {result.verdict === "Fail" && (
+                <lottie-player
+                  src="https://assets4.lottiefiles.com/packages/lf20_qp1spzqv.json"
+                  background="transparent"
+                  speed="1"
+                  loop
+                  autoplay
+                ></lottie-player>
+              )}
+            </div>
           </div>
         )}
-         {view === "review" && (
+
+        {/* Display review answers view */}
+        {view === "review" && (
           <div className="flex flex-col gap-2">
-            {questions.map((question, index) => {
-              const isCorrect = question.correctOption === selectedOptions[index];
-              return (
-                <div
-                  className={`
-                    flex flex-col gap-1 p-2 ${
-                      isCorrect ? "bg-success" : "bg-error"
-                    }
-                  `}
-                  key={index}
-                >
+            {questions.map((question, index) => (
+              <div className="flex flex-col gap-2" key={index}>
+                <div className="flex justify-between">
                   <h1 className="text-xl">
                     {index + 1} : {question.name}
                   </h1>
-                  <h1 className="text-md">
-                    Submitted Answer : {selectedOptions[index]} - {questions[selectedQuestionIndex].options[selectedOptions[index]]}
-                  </h1>
-                  <h1 className="text-md">
-                    Correct Answer : {question.correctOption} - {questions[selectedQuestionIndex].options[question.correctOption]}
-                  </h1>
                 </div>
-              );
-            })}
 
-            <div className="flex justify-center gap-2">
+                <div className="flex flex-col gap-2">
+                  {Object.keys(question.options).map((option, index) => (
+                    <div
+                      className={`flex gap-2 flex-col ${
+                        selectedOptions[index] === option ? "selected-option" : "option"
+                      }`}
+                      key={index}
+                    >
+                      <h1 className="text-xl">
+                        {option} : {question.options[option]}
+                      </h1>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-between mt-2">
               <button
                 className="primary-outlined-btn"
-                onClick={() => {
-                  navigate("/");
-                }}
+                onClick={resumeGame}
               >
-                Close
+                Resume Game
               </button>
+
               <button
                 className="primary-contained-btn"
                 onClick={() => {
-                  window.location.reload();
+                  navigate(`/answers/${params.id}`);
                 }}
               >
-                Retake Exam
+                Go to Answers
               </button>
             </div>
           </div>
         )}
-        </Modal>
       </div>
     )
   );

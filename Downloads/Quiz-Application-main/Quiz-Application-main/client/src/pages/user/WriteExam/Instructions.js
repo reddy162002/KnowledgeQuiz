@@ -39,7 +39,7 @@ function Instructions({ examData, setView, startTimer }) {
           className="primary-contained-btn"
           onClick={() => {
             startTimer();
-            setView("questions");
+            setView("games");
           }}
         >
           Start Quiz
