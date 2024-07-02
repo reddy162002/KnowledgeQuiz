@@ -146,6 +146,7 @@ function WriteExam() {
   useEffect(() => {
     if (winner === "Red") {
       setShowModal(true);
+      startTimer();
       setView("questions");
     }
   }, [winner]);
@@ -159,7 +160,7 @@ function WriteExam() {
         <div className="divider"></div>
 
         {viewSet === "instructions" && (
-          <Instructions examData={examData} setView={setViewSet} startTimer={startTimer} />
+          <Instructions examData={examData} setView={setViewSet} />
         )}
 
         {viewSet === "games" && (
