@@ -145,13 +145,20 @@ function WriteExam() {
       const switchToQuestionsTimer = setTimeout(() => {
         setShowModal(true);
         setView("questions");
-      }, 20000);
+      }, 2000);
       
       return () => clearTimeout(switchToQuestionsTimer);
     }
   }, []);
   // }, [examData, view]);
-
+  useEffect(() => {
+    if (timeUp && view === "games") {
+      setView("questions");
+    } else if (timeUp && view === "questions") {
+      calculateResult();
+      clearInterval(intervalId);
+    }
+  }, [timeUp, view, intervalId]);
   // Conditional rendering based on examData existence
   return (
     examData && (
