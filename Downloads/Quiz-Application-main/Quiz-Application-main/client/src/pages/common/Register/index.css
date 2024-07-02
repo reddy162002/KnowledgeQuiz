@@ -41,9 +41,9 @@ body{
     height: auto;
     padding: 1vh 1vw;
     color: #fff;
-    border: 1px solid #BE60D0;
+    border: 1px solid #E4797B;
     border-radius: 4px;
-    background: #BE60D0;
+    background: #E4797B;
     transition: all 0.23s ease-in;
   }
 .clickButton {
@@ -51,10 +51,10 @@ body{
     height: auto;
     padding: 1vh 1vw;
     color: #ffffff;
-    border: 1px solid #BE60D0;
+    border: 1px solid #E4797B;
     border-radius: 4px;
     background: transparent;
     transition: all 0.23s ease-in;
   }
 
-/* BE60D0 */
+/* E4797B */

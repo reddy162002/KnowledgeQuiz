@@ -188,7 +188,7 @@ function AddEditExam() {
     <div>
       <PageTitle title={id ? "Edit Quiz" : "Add Quiz"} />
       <div className="divider"></div>
-
+      <div style={{margin:"0vh 3vw"}}>
       {(examData || !id) && (
         <Form layout="vertical" onFinish={onFinish} initialValues={examData}>
           <Tabs defaultActiveKey="1">
@@ -249,7 +249,7 @@ function AddEditExam() {
           </Tabs>
         </Form>
       )}
-
+      </div>
       {showAddEditQuestionModal && (
         <AddEditQuestion
           setShowAddEditQuestionModal={setShowAddEditQuestionModal}
