@@ -50,12 +50,12 @@ function SignInwithGoogle() {
 
   return (
     <div>
-      <p className="continue-p">--Or continue with--</p>
+      {/* <p className="continue-p">--Or continue with--</p> */}
       <div
-        style={{ display: "flex", justifyContent: "center", cursor: "pointer"}}
+        style={{ display: "flex", justifyContent: "center", cursor: "pointer", marginTop:"2vh"}}
         onClick={googleLogin}
       >
-        <div style={{ border:"2px solid #633172", padding:"1vh 0vw"}}>
+        <div style={{ border:"2px solid #633172", padding:"1vh 0vw", display: "flex", justifyContent: "center",  width:"90%"}}>
         <img src={require("../../../images/google.png")} alt="Google Icon" width={"6%"} />
         <span style={{paddingLeft:"2vw"}}> Sign in with Google</span>
         </div>

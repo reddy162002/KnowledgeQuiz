@@ -69,12 +69,12 @@ function Login() {
           </div>
           <div className="divider"></div>
           <form onSubmit={handleSubmit}>
-      <h3>Login</h3>
       <DynamicForm {...formProps}/>
 
       <div style={{display:"flex", justifyContent:"space-between", margin:"3vh 2vw 0vh 2vw"}}>
       <p className="forgot-password text-right">
-       <a style={{color:"white", textDecoration: "none"}} href="/forgotPassword"> Forgot Password? </a>
+       {/* <a style={{color:"white", textDecoration: "none"}} href="/forgotPassword"> Forgot Password? </a> */}
+       <a style={{color:"white", textDecoration: "none"}} href="/register"> Not a member? Please Register</a>
       </p>
         <button className="submitButton" type="submit" disabled={isDisabled}>
                   {isDisabled ? 'Loggin In...' : 'LogIn'}

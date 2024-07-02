@@ -62,14 +62,7 @@ function WriteExam() {
     }
   }, [params.id]);
 
-  // Start timer when examData is initialized
-  useEffect(() => {
-    if (examData) {
-      startTimer();
-    }
-  }, [examData]);
-
-  // Function to calculate result
+  
   const calculateResult = async () => {
     try {
       let correctAnswers = [];
@@ -127,14 +120,7 @@ function WriteExam() {
   };
 
   // Effect to handle timer expiration
-  useEffect(() => {
-    if (timeUp && view === "games") {
-      setView("questions");
-    } else if (timeUp && view === "questions") {
-      calculateResult();
-      clearInterval(intervalId);
-    }
-  }, [timeUp, view, intervalId]);
+
 
   // Function to handle submitting answers
   const submitAnswers = () => {
