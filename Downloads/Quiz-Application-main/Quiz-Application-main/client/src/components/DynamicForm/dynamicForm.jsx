@@ -109,7 +109,20 @@ const DynamicForm = ({
                         : undefined
                     } 
                   />
-                {inputType === "password" && (
+                  {inputType === "password" && (
+  <span
+    className={Styles.togglePassword}
+    onClick={() => togglePasswordVisibility(key)}>
+    <span
+      style={{ fontSize: "2.5vh", color:"#633172" }}>
+      {passwordVisibility[key]
+        ? <i className="ri-eye-close-line"></i>
+        : <i className="ri-eye-line"></i>}
+    </span>
+  </span>
+)}
+
+                {/* {inputType === "password" && (
                   <span
                     className={Styles.togglePassword}
                     onClick={() => togglePasswordVisibility(key)}>
@@ -121,7 +134,7 @@ const DynamicForm = ({
                         : "visibility"}
                     </span>
                   </span>
-                )}
+                )} */}
               </>
           </div>
         );

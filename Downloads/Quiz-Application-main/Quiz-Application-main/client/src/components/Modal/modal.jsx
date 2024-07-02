@@ -104,18 +104,29 @@ const Modal = ({
             <></>
           )}
           {onClose ? (
+            // <span
+            //   className="material-symbols-rounded"
+            //   style={{
+            //     fontSize: "3vh",
+            //     cursor: "pointer",
+            //     zIndex: 1000,
+            //     justifySelf: "end",
+            //   }}
+            //   onClick={onClose}
+            // >
+            //   close
+            // </span>
             <span
-              className="material-symbols-rounded"
-              style={{
-                fontSize: "3vh",
-                cursor: "pointer",
-                zIndex: 1000,
-                justifySelf: "end",
-              }}
-              onClick={onClose}
-            >
-              close
-            </span>
+  className="ri-close-line"
+  style={{
+    fontSize: "3vh",
+    cursor: "pointer",
+    zIndex: 1000,
+    justifySelf: "end",
+  }}
+  onClick={onClose}
+></span>
+
           ) : (
             <></>
           )}

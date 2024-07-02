@@ -95,13 +95,12 @@ function Register() {
       <div className="card w-400 p-3 bg-white">
         <div className="flex flex-col">
           <h1 className="text-2xl">
-            QUIZ - REGISTER<i className="ri-user-add-line"></i>
+            QUIZ - REGISTER <i className="ri-user-add-line"></i>
           </h1>
           <div className="divider"></div>
           <form onSubmit={handleRegister}>
-            <h3> Register </h3>
             <DynamicForm {...formProps} />
-            <div style={{ display: "flex", justifyContent: "space-between", margin: "3vh 2vw 0vh 2vw" }}>
+            <div style={{ display: "flex", gap:"2vw", margin: "3vh 2vw 0vh 2vw" }}>
               <p className="forgot-password text-right">
                 Already registered? Then <a style={{ color: "white", fontWeight: "900", textDecoration: "none" }} href="/login">Login</a>
               </p>
