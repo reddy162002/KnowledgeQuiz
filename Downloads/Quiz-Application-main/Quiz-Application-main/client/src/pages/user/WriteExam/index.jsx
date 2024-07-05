@@ -7,6 +7,7 @@ import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import { message } from "antd";
 import Instructions from "./Instructions";
 import ConnectFourGame from "../../games/connect4";
+import WhackAMole from "../../games/whackAMole";
 import Modal from "../../../components/Modal/modal";
 
 function WriteExam() {
@@ -202,7 +203,12 @@ function WriteExam() {
           <Instructions examData={examData} setView={setView} />
         )}
 
-        {view === "games" && <div style={{display:"grid"}}><ConnectFourGame />
+        {view === "games" && <div style={{display:"grid"}}>
+          {examData.subject === "lghUFzzvSajZGa7ETLhp" ? (
+          <ConnectFourGame />
+          ):examData.subject === "pQ7y5vpVMuNDN8JV2IMC" ?(
+            <WhackAMole />
+          ) : <></>}
       <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button>
         </div>}
 
