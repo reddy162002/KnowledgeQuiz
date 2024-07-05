@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-const ConnectFourGame = () => {
+const ConnectFourGame = ({ setWinner }) => {
   const rows = 6;
   const columns = 7;
   const [board, setBoard] = useState(
@@ -11,26 +11,32 @@ const ConnectFourGame = () => {
       .map(() => Array(columns).fill(null))
   );
   const [currentPlayer, setCurrentPlayer] = useState("Red");
-  const [winner, setWinner] = useState(null);
+  const [gameWinner, setGameWinner] = useState(null);
 
   useEffect(() => {
-    if (currentPlayer === "Yellow" && !winner) {
+    if (currentPlayer === "Yellow" && !gameWinner) {
       const timeout = setTimeout(() => {
         computerMove();
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [currentPlayer, winner]);
+  }, [currentPlayer, gameWinner]);
+
+  useEffect(() => {
+    if (gameWinner) {
+      setWinner(gameWinner);
+    }
+  }, [gameWinner, setWinner]);
 
   const handleClick = (col) => {
-    if (winner || currentPlayer === "Yellow") return;
+    if (gameWinner || currentPlayer === "Yellow") return;
 
     const newBoard = makeMove(board, col, currentPlayer);
     if (!newBoard) return;
 
     setBoard(newBoard);
     if (checkForWinner(newBoard, currentPlayer)) {
-      setWinner(currentPlayer);
+      setGameWinner(currentPlayer);
     } else {
       setCurrentPlayer("Yellow");
     }
@@ -42,22 +48,16 @@ const ConnectFourGame = () => {
 
     setBoard(newBoard);
     if (checkForWinner(newBoard, "Yellow")) {
-      setWinner("Yellow");
+      setGameWinner("Yellow");
     } else {
       setCurrentPlayer("Red");
     }
   };
 
-  const getValidMoves = (board) => {
-    return board[0]
-      .map((cell, colIndex) => (cell === null ? colIndex : null))
-      .filter((col) => col !== null);
-  };
-
   const makeMove = (board, col, player) => {
-    const newBoard = board.map((row) => row.slice());
     for (let row = rows - 1; row >= 0; row--) {
-      if (!newBoard[row][col]) {
+      if (!board[row][col]) {
+        const newBoard = board.map((row) => row.slice());
         newBoard[row][col] = player;
         return newBoard;
       }
@@ -66,117 +66,76 @@ const ConnectFourGame = () => {
   };
 
   const checkForWinner = (board, player) => {
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < columns; col++) {
-        if (
-          checkDirection(board, row, col, 0, 1, player) ||
-          checkDirection(board, row, col, 1, 0, player) ||
-          checkDirection(board, row, col, 1, 1, player) ||
-          checkDirection(board, row, col, 1, -1, player)
-        ) {
-          return true;
+    const checkDirection = (dx, dy) => {
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+          let count = 0;
+          for (let k = 0; k < 4; k++) {
+            const r = row + k * dy;
+            const c = col + k * dx;
+            if (r >= 0 && r < rows && c >= 0 && c < columns && board[r][c] === player) {
+              count++;
+            } else {
+              break;
+            }
+          }
+          if (count === 4) return true;
         }
       }
-    }
-    return false;
-  };
+      return false;
+    };
 
-  const checkDirection = (board, row, col, rowDir, colDir, player) => {
-    let count = 0;
-    for (let i = 0; i < 4; i++) {
-      const newRow = row + i * rowDir;
-      const newCol = col + i * colDir;
-      if (
-        newRow < 0 ||
-        newRow >= rows ||
-        newCol < 0 ||
-        newCol >= columns ||
-        board[newRow][newCol] !== player
-      ) {
-        break;
-      }
-      count++;
-    }
-    return count === 4;
-  };
-
-  const evaluateBoard = (board) => {
-    let score = 0;
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < columns; col++) {
-        if (board[row][col] === "Yellow") {
-          score += evaluatePosition(board, row, col, "Yellow");
-        } else if (board[row][col] === "Red") {
-          score -= evaluatePosition(board, row, col, "Red");
-        }
-      }
-    }
-    return score;
-  };
-
-  const evaluatePosition = (board, row, col, player) => {
-    let score = 0;
-    if (checkDirection(board, row, col, 0, 1, player)) score++;
-    if (checkDirection(board, row, col, 1, 0, player)) score++;
-    if (checkDirection(board, row, col, 1, 1, player)) score++;
-    if (checkDirection(board, row, col, 1, -1, player)) score++;
-    return score;
+    return (
+      checkDirection(1, 0) || // Horizontal
+      checkDirection(0, 1) || // Vertical
+      checkDirection(1, 1) || // Diagonal /
+      checkDirection(1, -1)   // Diagonal \
+    );
   };
 
   const minimax = (board, depth, alpha, beta, maximizingPlayer) => {
-    const validMoves = getValidMoves(board);
-    const isTerminal =
-      validMoves.length === 0 ||
-      checkForWinner(board, "Red") ||
-      checkForWinner(board, "Yellow");
+    const winner = checkForWinner(board, "Yellow")
+      ? "Yellow"
+      : checkForWinner(board, "Red")
+      ? "Red"
+      : null;
 
-    if (depth === 0 || isTerminal) {
-      if (checkForWinner(board, "Yellow")) {
-        return { score: 1000 };
-      } else if (checkForWinner(board, "Red")) {
-        return { score: -1000 };
-      } else {
-        return { score: evaluateBoard(board) };
-      }
+    if (depth === 0 || winner) {
+      if (winner === "Yellow") return { score: 10 - depth };
+      if (winner === "Red") return { score: depth - 10 };
+      return { score: 0 };
+    }
+
+    const availableMoves = [];
+    for (let col = 0; col < columns; col++) {
+      if (board[0][col] === null) availableMoves.push(col);
     }
 
     if (maximizingPlayer) {
       let maxEval = -Infinity;
       let bestMove = null;
-      for (let col of validMoves) {
+      for (const col of availableMoves) {
         const newBoard = makeMove(board, col, "Yellow");
-        const evaluation = minimax(
-          newBoard,
-          depth - 1,
-          alpha,
-          beta,
-          false
-        ).score;
-        if (evaluation > maxEval) {
-          maxEval = evaluation;
+        const { score } = minimax(newBoard, depth - 1, alpha, beta, false);
+        if (score > maxEval) {
+          maxEval = score;
           bestMove = col;
         }
-        alpha = Math.max(alpha, evaluation);
+        alpha = Math.max(alpha, score);
         if (beta <= alpha) break;
       }
       return { col: bestMove, score: maxEval };
     } else {
       let minEval = Infinity;
       let bestMove = null;
-      for (let col of validMoves) {
+      for (const col of availableMoves) {
         const newBoard = makeMove(board, col, "Red");
-        const evaluation = minimax(
-          newBoard,
-          depth - 1,
-          alpha,
-          beta,
-          true
-        ).score;
-        if (evaluation < minEval) {
-          minEval = evaluation;
+        const { score } = minimax(newBoard, depth - 1, alpha, beta, true);
+        if (score < minEval) {
+          minEval = score;
           bestMove = col;
         }
-        beta = Math.min(beta, evaluation);
+        beta = Math.min(beta, score);
         if (beta <= alpha) break;
       }
       return { col: bestMove, score: minEval };
@@ -190,13 +149,13 @@ const ConnectFourGame = () => {
         .map(() => Array(columns).fill(null))
     );
     setCurrentPlayer("Red");
-    setWinner(null);
+    setGameWinner(null);
   };
 
   return (
     <div className="connect-container">
       <h1>Connect Four</h1>
-      {winner && <h2>{winner=== "Red" ? "Blue" : "Yellow"} wins!</h2>}
+      {gameWinner && <h2>{gameWinner === "Red" ? "Blue" : "Yellow"} wins!</h2>}
       <div className="board">
         {board.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
@@ -212,7 +171,7 @@ const ConnectFourGame = () => {
           </div>
         ))}
       </div>
-      <button className="primary-outlined-btn" onClick={resetGame}>Reset Game</button>
+      <button className="primary-outline-btn" onClick={resetGame}>Reset</button>
     </div>
   );
 };
