@@ -212,7 +212,7 @@ const ConnectFourGame = () => {
           </div>
         ))}
       </div>
-      {/* <button className="primary-outlined-btn" onClick={resetGame}>Reset Game</button> */}
+      <button className="primary-outlined-btn" onClick={resetGame}>Reset Game</button>
     </div>
   );
 };

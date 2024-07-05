@@ -209,7 +209,7 @@ function WriteExam() {
           ):examData.subject === "pQ7y5vpVMuNDN8JV2IMC" ?(
             <WhackAMole />
           ) : <></>}
-      <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button>
+      {/* <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button> */}
         </div>}
 
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} header="Question" size="xlarge">

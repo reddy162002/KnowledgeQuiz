@@ -100,8 +100,8 @@ function AddEditExam() {
         const examData = examSnap.data();
         console.log(examData);
         setExamData(examData);
-        if (examData.questions) {
-          fetchQuestions(examData.questions);
+        if (examData.question) {
+          fetchQuestions(examData.question);
         }
       } else {
         message.error("Exam not found");
