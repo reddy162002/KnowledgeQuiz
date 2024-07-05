@@ -66,7 +66,7 @@ function AddEditExam() {
         passingMarks: parseInt(values.passingMarks),
         totalMarks: parseInt(values.totalMarks),
         subject: values.subject,
-        questions: values.questions || [],
+        question: values.questions || [],
       };
       let response;
       if (id) {

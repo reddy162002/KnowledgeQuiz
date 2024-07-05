@@ -49,7 +49,7 @@ function AddEditQuestion({
         // Update associated exam with new question ID
         const examRef = doc(db, "Quizzes", examId);
         await updateDoc(examRef, {
-          questions: arrayUnion(questionRef.id),
+          question: arrayUnion(questionRef.id),
         });
         
         response = { success: true, message: "Question added successfully" };
