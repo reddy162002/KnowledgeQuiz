@@ -116,7 +116,7 @@ function Exams() {
       </div>
       <div style={{ margin: "0vh 2vw" }}>
         <div className="divider"></div>
-        <Table columns={columns} dataSource={exams} rowKey="id" />
+        <Table columns={columns} dataSource={exams} pagination={{ pageSize: 7 }} rowKey="id" />
       </div>
     </div>
   );

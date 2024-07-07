@@ -30,13 +30,13 @@ function ProtectedRoute({ children }) {
       title: "Leaderboard",
       paths: ["/leaderboard"],
       icon: <i className="ri-heart-line"></i>,
-      // onClick: () => navigate("/profile"),
+      onClick: () => navigate("/leaderboard"),
     },
     {
       title: "Profile",
       paths: ["/profile"],
       icon: <i className="ri-user-line"></i>,
-      // onClick: () => navigate("/profile"),
+      onClick: () => navigate("/profile"),
     },
     {
       title: "Logout",
@@ -66,19 +66,19 @@ function ProtectedRoute({ children }) {
       title: "Leaderboard",
       paths: ["/leaderboard"],
       icon: <i className="ri-heart-line"></i>,
-      // onClick: () => navigate("/profile"),
+      onClick: () => navigate("/leaderboard"),
     },
-    {
-      title: "Reports",
-      paths: ["/admin/reports"],
-      icon: <i className="ri-bar-chart-line"></i>,
-      onClick: () => navigate("/admin/reports"),
-    },
+    // {
+    //   title: "Reports",
+    //   paths: ["/admin/reports"],
+    //   icon: <i className="ri-bar-chart-line"></i>,
+    //   onClick: () => navigate("/admin/reports"),
+    // },
     {
       title: "Profile",
       paths: ["/profile"],
       icon: <i className="ri-user-line"></i>,
-      // onClick: () => navigate("/profile"),
+      onClick: () => navigate("/profile"),
     },
     {
       title: "Logout",

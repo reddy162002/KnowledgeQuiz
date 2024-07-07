@@ -63,7 +63,7 @@ function Login() {
     <div className="flex justify-center items-center h-screen w-screen bg-primary">
       <div className="card w-400 p-3 bg-white">
         <div className="flex flex-col">
-          <div className="flex">
+          <div style={{width:"30vw"}} className="flex">
             <h1 className="text-2xl">QUIZ - LOGIN <i class="ri-login-circle-line"></i></h1>
             
           </div>

@@ -44,7 +44,7 @@ function PageTitle({title}) {
         <hr />
         <div className={styles.innerDiv}>
         <h1>{title}</h1>
-        <div style={{display:"grid"}}> Hi {user?.name}
+        <div style={{display:"grid"}}> Hi {user?.firstName}
         <span>User Role: {user?.role === "admin" ? "Admin" : "User"}</span></div>
         </div>
         <hr/>

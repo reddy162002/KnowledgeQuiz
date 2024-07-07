@@ -7,7 +7,8 @@ import "./index.css";
 import DynamicForm from "../../../components/DynamicForm/dynamicForm";
 
 function Register() {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +21,7 @@ function Register() {
     try {
       if (confirmPassword !== password) {
         setIsDisabled(false); 
+        toast.error("Passwords do not match", { position: "top-center" });
         return;
       }
       await createUserWithEmailAndPassword(auth, email, password);
@@ -27,7 +29,8 @@ function Register() {
       if (user) {
         await setDoc(doc(db, "Users", user.uid), {
           email: user.email,
-          name: name,
+          firstName: firstName,
+          lastName: lastName,
           dateOfBirth: dob,
           photo: ""
         });
@@ -50,23 +53,26 @@ function Register() {
   };
 
   const formProps = {
-    inputKeys: ["name", "dob", "email", "password", "confirmPassword"],
+    inputKeys: ["firstName", "lastName", "dob", "email", "password", "confirmPassword"],
     labels: {
-      name: "Name",
+      firstName: "First Name",
+      lastName: "Last Name",
       dob: "Date of Birth",
       email: "Email Address",
       password: "Password",
       confirmPassword: "Confirm Password",
     },
     inputTypes: {
-      name: "text",
+      firstName: "text",
+      lastName: "text",
       dob: "date",
       email: "text",
       password: "password",
       confirmPassword: "password",
     },
     values: {
-      name: name,
+      firstName: firstName,
+      lastName: lastName,
       dob: dob,
       email: email,
       password: password,
@@ -75,17 +81,20 @@ function Register() {
     columns: 1,
     inputWidth: 100,
     onChangeHandlers: {
-      name: (value) => setName(value),
+      firstName: (value) => setFirstName(value),
+      lastName: (value) => setLastName(value),
       dob: (value) => setDob(value),
       email: (value) => setEmail(value),
       password: (value) => setPassword(value),
       confirmPassword: (value) => setConfirmPassword(value),
     },
     placeholders: {
-      name: "Enter your Name",
-      email: "Enter your email",
-      password: "Enter password",
-      confirmPassword: "Enter password again",
+      firstName: "Enter your First Name",
+      lastName: "Enter your Last Name",
+      dob: "Enter your Date of Birth",
+      email: "Enter your Email",
+      password: "Enter Password",
+      confirmPassword: "Confirm Password",
     },
     validationRules: {},
   };
@@ -93,7 +102,7 @@ function Register() {
   return (
     <div className="flex justify-center items-center h-screen w-screen bg-primary">
       <div className="card w-400 p-3 bg-white">
-        <div className="flex flex-col">
+        <div style={{width:"30vw"}} className="flex flex-col">
           <h1 className="text-2xl">
             QUIZ - REGISTER <i className="ri-user-add-line"></i>
           </h1>

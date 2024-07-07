@@ -147,7 +147,8 @@ function AddEditExam() {
       title: "Options",
       dataIndex: "options",
       render: (text, record) => {
-        return Object.keys(record.options).map((key) => (
+        const sortedOptions = Object.keys(record.options).sort(); // Sort keys A, B, C, D, ...
+        return sortedOptions.map((key) => (
           <div key={key}>
             {key} : {record.options[key]}
           </div>
@@ -183,6 +184,7 @@ function AddEditExam() {
       ),
     },
   ];
+  
 
   return (
     <div>
@@ -243,7 +245,7 @@ function AddEditExam() {
                   </button>
                 </div>
 
-                <Table columns={questionsColumns} dataSource={questions} rowKey="id" />
+                <Table columns={questionsColumns} dataSource={questions} pagination={{ pageSize: 3 }} rowKey="id" />
               </TabPane>
             )}
           </Tabs>

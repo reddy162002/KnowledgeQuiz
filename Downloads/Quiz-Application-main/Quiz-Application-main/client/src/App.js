@@ -8,6 +8,7 @@ import "./stylesheets/layout.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/common/Login";
 import Register from "./pages/common/Register";
+import Profile from "./pages/common/Profile/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/common/Home";
 import Exams from "./pages/admin/Exams";
@@ -20,6 +21,7 @@ import UserReports from "./pages/user/UserReports";
 import AdminReports from "./pages/admin/AdminReports";
 import WhackAMole from "./pages/games/whackAMole";
 import ConnectFourGame from "./pages/games/connect4";
+import LeaderBoard from "./pages/common/LeaderBoard/LeaderBoard";
 
 function App() {
   const [user, setUser] = useState();
@@ -46,6 +48,14 @@ function App() {
           {/* Common Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>} />
+          <Route path="/leaderboard" element={
+            <ProtectedRoute>
+                <LeaderBoard />
+              </ProtectedRoute>} />
 
           {/* User Routes */}
           <Route

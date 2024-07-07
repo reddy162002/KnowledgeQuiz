@@ -1,19 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PageTitle from "../../../components/PageTitle";
 import { message, Table } from "antd";
 import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
-import { getAllReports } from "../../../apicalls/reports";
-import { useEffect } from "react";
+import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import { db } from "../../../components/firebase";
 import moment from "moment";
 
 function AdminReports() {
-  const [reportsData, setReportsData] = React.useState([]);
+  const [reportsData, setReportsData] = useState([]);
   const dispatch = useDispatch();
-  const [filters, setFilters] = React.useState({
+  const [filters, setFilters] = useState({
     examName: "",
     userName: "",
   });
+
   const columns = [
     {
       title: "Exam Name",
@@ -29,7 +30,7 @@ function AdminReports() {
       title: "Date",
       dataIndex: "date",
       render: (text, record) => (
-        <>{moment(record.createdAt).format("DD-MM-YYYY hh:mm:ss")}</>
+        <>{moment(record.createdAt.toDate()).format("DD-MM-YYYY hh:mm:ss")}</>
       ),
     },
     {
@@ -57,12 +58,32 @@ function AdminReports() {
   const getData = async (tempFilters) => {
     try {
       dispatch(ShowLoading());
-      const response = await getAllReports(tempFilters);
-      if (response.success) {
-        setReportsData(response.data);
-      } else {
-        message.error(response.message);
+      let reportsQuery = collection(db, "Reports");
+
+      if (tempFilters.examName) {
+        const quizzesSnapshot = await getDocs(
+          query(collection(db, "Quizzes"), where("name", "==", tempFilters.examName))
+        );
+        const quizIds = quizzesSnapshot.docs.map((doc) => doc.id);
+        reportsQuery = query(reportsQuery, where("quiz", "in", quizIds));
       }
+
+      const reportsSnapshot = await getDocs(reportsQuery);
+      const reportsData = await Promise.all(
+        reportsSnapshot.docs.map(async (reportDoc) => {
+          const reportData = reportDoc.data();
+          const userDoc = await getDoc(doc(db, "Users", reportData.user));
+          const quizDoc = await getDoc(doc(db, "Quizzes", reportData.quiz));
+          return {
+            ...reportData,
+            user: userDoc.data(),
+            exam: quizDoc.data(),
+            id: reportDoc.id,
+          };
+        })
+      );
+
+      setReportsData(reportsData);
       dispatch(HideLoading());
     } catch (error) {
       dispatch(HideLoading());
@@ -77,41 +98,41 @@ function AdminReports() {
   return (
     <div>
       <PageTitle title="Reports" />
-      <div style={{padding:"0vh 2vw"}}>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Exam"
-          value={filters.examName}
-          onChange={(e) => setFilters({ ...filters, examName: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="User"
-          value={filters.userName}
-          onChange={(e) => setFilters({ ...filters, userName: e.target.value })}
-        />
-        <button
-          className="primary-outlined-btn"
-          onClick={() => {
-            setFilters({
-              examName: "",
-              userName: "",
-            });
-            getData({
-              examName: "",
-              userName: "",
-            });
-          }}
-        >
-          Clear 
-        </button>
-        <button className="primary-contained-btn" onClick={() => getData(filters)}>
-          Search
-        </button>
+      <div style={{ padding: "0vh 2vw" }}>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Exam"
+            value={filters.examName}
+            onChange={(e) => setFilters({ ...filters, examName: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="User"
+            value={filters.userName}
+            onChange={(e) => setFilters({ ...filters, userName: e.target.value })}
+          />
+          <button
+            className="primary-outlined-btn"
+            onClick={() => {
+              setFilters({
+                examName: "",
+                userName: "",
+              });
+              getData({
+                examName: "",
+                userName: "",
+              });
+            }}
+          >
+            Clear
+          </button>
+          <button className="primary-contained-btn" onClick={() => getData(filters)}>
+            Search
+          </button>
+        </div>
+        <Table columns={columns} dataSource={reportsData} pagination={{ pageSize: 7 }} className="mt-2" />
       </div>
-      <Table columns={columns} dataSource={reportsData} className="mt-2" />
-    </div>
     </div>
   );
 }
