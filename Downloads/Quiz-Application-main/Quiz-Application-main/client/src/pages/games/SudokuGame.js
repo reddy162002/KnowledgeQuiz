@@ -135,7 +135,7 @@ const SudokuGame = () => {
   };
 
   return (
-    <div className="sudoku">
+    <div className="sudoku" style={{display:"grid", justifyContent:"center"}}>
       <h1 className="sudoku-heading">Sudoku Game</h1>
       <div className="sudoku-board">
         {board.map((row, rowIndex) => (
@@ -170,7 +170,7 @@ const SudokuGame = () => {
           </div>
         ))}
       </div>
-      <button className="sudoku-submit-btn" onClick={handleSubmit}>
+      <button style={{placeSelf:"center"}} className="primary-outlined-btn" onClick={handleSubmit}>
         Submit Sudoku
       </button>
     </div>

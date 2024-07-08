@@ -133,9 +133,9 @@ const WordGridGame = () => {
   };
 
   return (
-    <div className="word-grid-game">
-      <h1>Draggable Word Search Game</h1>
-      <p>Hidden Words: {wordsToFind.length}</p>
+    <div className="word-grid-game" style={{display:"grid", justifyContent:"center"}}>
+      <h1 style={{placeSelf:"center"}}>Word Search Game</h1>
+      <p style={{placeSelf:"center"}}>Hidden Words: {wordsToFind.length}</p>
       <div className="grid-container">
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="grid-row">
@@ -161,24 +161,24 @@ const WordGridGame = () => {
           </div>
         ))}
       </div>
-      <div className="word-list">
+      <div style={{display:"grid", placeContent: "center"}} className="word-list">
         <h2>Words to Find</h2>
-        <ul>
+        <div style={{display:"flex", gap:"2vw"}}>
           {wordsToFind.map((word, index) => (
-            <li
+            <div
               key={index}
               className={foundWords.includes(word) ? "found" : ""}
             >
               {word}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
       {gameOver && (
         <div className="game-over">
           <h2>Congratulations!</h2>
           <p>You found all the hidden words.</p>
-          <button onClick={restartGame}>Play Again</button>
+          <button className="primary-outlined-btn" onClick={restartGame}>Play Again</button>
         </div>
       )}
     </div>

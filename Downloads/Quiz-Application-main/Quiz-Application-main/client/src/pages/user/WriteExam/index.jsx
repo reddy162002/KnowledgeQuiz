@@ -8,6 +8,8 @@ import { message } from "antd";
 import Instructions from "./Instructions";
 import ConnectFourGame from "../../games/connect4";
 import WhackAMole from "../../games/whackAMole";
+import WordGridGame from "../../games/wordGuess";
+import SudokuGame from "../../games/SudokuGame";
 import Modal from "../../../components/Modal/modal";
 
 function WriteExam() {
@@ -339,9 +341,13 @@ useEffect(() => {
 
         {view === "games" && <div style={{display:"grid"}}>
           {examData.subject === "lghUFzzvSajZGa7ETLhp" ? (
-          <ConnectFourGame />
+            <ConnectFourGame />
           ):examData.subject === "pQ7y5vpVMuNDN8JV2IMC" ?(
             <WhackAMole />
+          ) : examData.subject === "YQ5bhiV3ALXaCSCdtnS7" ?(
+            <WordGridGame />
+          ) : examData.subject === "jhj6EiD4OmYQCe3YniKk" ?(
+            <SudokuGame />
           ) : <></>}
       {/* <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button> */}
         </div>}
