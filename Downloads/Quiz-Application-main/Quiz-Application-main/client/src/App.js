@@ -136,7 +136,7 @@ function App() {
             }
           />
           <Route
-            path="/sudokugame"
+            path="/user/sudokugame"
             element={
               <ProtectedRoute>
                 <SudokuGame />
