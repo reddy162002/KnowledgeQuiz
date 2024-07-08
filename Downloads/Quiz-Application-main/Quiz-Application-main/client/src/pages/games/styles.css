@@ -15,7 +15,7 @@
   .hole {
     width: 100px;
     height: 100px;
-    background: url('./hole.png') no-repeat center center;
+    background: url('../../images/hole.png') no-repeat center center;
     background-size: cover;
     border: none;
     /* border-radius: 50%; */
@@ -24,7 +24,7 @@
   }
   
   .mole {
-    background: url('./mole.png') no-repeat center center;
+    background: url('../../images/mole.png') no-repeat center center;
     background-size: cover;
   }
   

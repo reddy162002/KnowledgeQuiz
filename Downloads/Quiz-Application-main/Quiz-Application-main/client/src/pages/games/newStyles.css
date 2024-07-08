@@ -1,0 +1,41 @@
+.grid-cell {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+  
+  .grid-cell.selected {
+    background-color: blue;
+    color: white;
+  }
+  
+  .grid-cell.found {
+    background-color: green;
+    color: white;
+  }
+  
+  .grid-row {
+    display: flex;
+  }
+  
+  .word-list {
+    margin-top: 20px;
+  }
+  
+  .word-list li {
+    list-style-type: none;
+  }
+  
+  .word-list li.found {
+    text-decoration: line-through;
+  }
+  
+  .game-over {
+    margin-top: 20px;
+  }
+  
+  

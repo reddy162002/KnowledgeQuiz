@@ -22,6 +22,8 @@ import AdminReports from "./pages/admin/AdminReports";
 import WhackAMole from "./pages/games/whackAMole";
 import ConnectFourGame from "./pages/games/connect4";
 import LeaderBoard from "./pages/common/LeaderBoard/LeaderBoard";
+import SudokuGame from "./pages/games/SudokuGame";
+import WordGridGame from "./pages/games/wordGuess";
 
 function App() {
   const [user, setUser] = useState();
@@ -122,6 +124,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ConnectFourGame />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/word-guess"
+            element={
+              <ProtectedRoute>
+                <WordGridGame />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sudokugame"
+            element={
+              <ProtectedRoute>
+                <SudokuGame />
               </ProtectedRoute>
             }
           />
