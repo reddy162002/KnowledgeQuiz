@@ -341,13 +341,13 @@ useEffect(() => {
 
         {view === "games" && <div style={{display:"grid"}}>
           {examData.subject === "lghUFzzvSajZGa7ETLhp" ? (
-            <ConnectFourGame />
+            <SudokuGame />
           ):examData.subject === "pQ7y5vpVMuNDN8JV2IMC" ?(
             <WhackAMole />
           ) : examData.subject === "YQ5bhiV3ALXaCSCdtnS7" ?(
             <WordGridGame />
           ) : examData.subject === "jhj6EiD4OmYQCe3YniKk" ?(
-            <SudokuGame />
+            <ConnectFourGame />
           ) : <></>}
       {/* <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button> */}
         </div>}
