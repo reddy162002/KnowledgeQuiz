@@ -12,6 +12,7 @@ function Profile() {
   const [photo, setPhoto] = useState("");
   const [email, setEmail] = useState("");
   const [dob, setDob] = useState("");
+  const [role, setRole] = useState("");
   const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ function Profile() {
             setEmail(userData.email || ""); 
             setPhoto(userData.photo || ""); 
             setDob(userData.dateOfBirth || ""); 
+            setRole(userData.role || ""); 
           } else {
             console.log("No such document!");
           }
@@ -52,6 +54,7 @@ function Profile() {
           lastName: lname,
           photo, 
           dateOfBirth: dob,
+          role,
         });
         toast.success("User's profile details updated successfully", {
           position: "top-center",
