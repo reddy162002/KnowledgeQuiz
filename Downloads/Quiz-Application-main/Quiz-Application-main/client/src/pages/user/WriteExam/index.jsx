@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db, auth } from "../../../components/firebase";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
@@ -25,203 +25,58 @@ function WriteExam() {
   const [intervalId, setIntervalId] = useState(null);
   const dispatch = useDispatch();
   const params = useParams();
-
+  const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const [questionTimerId, setQuestionTimerId] = useState(null);
-
   const [user, setUser] = useState();
+  const gameType = new URLSearchParams(location.search).get("game");
+
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-  });
+  }, []);
 
-  // useEffect(() => {
-  //   const getExamData = async () => {
-  //     try {
-  //       dispatch(ShowLoading());
-  //       const quizRef = doc(db, "Quizzes", params.id);
-  //       const quizSnapshot = await getDoc(quizRef);
+  useEffect(() => {
+    const getExamData = async () => {
+      try {
+        dispatch(ShowLoading());
+        const quizRef = doc(db, "Quizzes", params.id);
+        const quizSnapshot = await getDoc(quizRef);
 
-  //       if (quizSnapshot.exists()) {
-  //         const quizData = quizSnapshot.data();
-  //         setExamData(quizData);
+        if (quizSnapshot.exists()) {
+          const quizData = quizSnapshot.data();
+          setExamData(quizData);
 
-  //         const questionIds = quizData.question;
-  //         const questionPromises = questionIds.map(async (questionId) => {
-  //           const questionRef = doc(db, "Questions", questionId);
-  //           const questionSnapshot = await getDoc(questionRef);
-  //           return questionSnapshot.data();
-  //         });
+          const questionIds = quizData.question;
+          const questionPromises = questionIds.map(async (questionId) => {
+            const questionRef = doc(db, "Questions", questionId);
+            const questionSnapshot = await getDoc(questionRef);
+            return { ...questionSnapshot.data(), id: questionSnapshot.id };
+          });
 
-  //         const fetchedQuestions = await Promise.all(questionPromises);
-  //         setQuestions(fetchedQuestions);
-  //         setSecondsLeft(quizData.duration);
-  //       } else {
-  //         message.error("Quiz not found!");
-  //       }
-  //       dispatch(HideLoading());
-  //     } catch (error) {
-  //       dispatch(HideLoading());
-  //       message.error(error.message);
-  //     }
-  //   };
-
-  //   if (params.id) {
-  //     getExamData();
-  //   }
-  // }, [params.id]);
-  
-  // useEffect(() => {
-  //   const getExamData = async () => {
-  //     try {
-  //       dispatch(ShowLoading());
-  //       const quizRef = doc(db, "Quizzes", params.id);
-  //       const quizSnapshot = await getDoc(quizRef);
-  
-  //       if (quizSnapshot.exists()) {
-  //         const quizData = quizSnapshot.data();
-  //         setExamData(quizData);
-  
-  //         const questionIds = quizData.question;
-  //         const questionPromises = questionIds.map(async (questionId) => {
-  //           const questionRef = doc(db, "Questions", questionId);
-  //           const questionSnapshot = await getDoc(questionRef);
-  //           return questionSnapshot.data();
-  //         });
-  
-  //         const fetchedQuestions = await Promise.all(questionPromises);
-  //         setQuestions(fetchedQuestions);
-  //         setSecondsLeft(quizData.duration);
-  //       } else {
-  //         message.error("Quiz not found!");
-  //       }
-  //       dispatch(HideLoading());
-  //     } catch (error) {
-  //       dispatch(HideLoading());
-  //       message.error(error.message);
-  //     }
-  //   };
-  
-  //   if (params.id) {
-  //     getExamData();
-  //   }
-  // }, [params.id, dispatch]);
-
-
-
-  // const calculateResult = async () => {
-  //   let correctAnswers = [];
-  //   let wrongAnswers = [];
-  
-  //   questions.forEach((question, index) => {
-  //     if (question.correctOption.toString() === selectedOptions[index]) {
-  //       correctAnswers.push(question);
-  //     } else {
-  //       wrongAnswers.push(question);
-  //     }
-  //   });
-  
-  //   const perQueMarks = examData.totalMarks / questions.length;
-  //   const obtainedMarks = correctAnswers.length * perQueMarks;
-  //   const obtainedPercent = (obtainedMarks / examData.totalMarks) * 100;
-  
-  //   let verdict = "Pass";
-  //   if (obtainedMarks < parseInt(examData.passingMarks)) {
-  //     verdict = "Fail";
-  //   }
-  
-  //   const tempResult = {
-  //     correctAnswers,
-  //     wrongAnswers,
-  //     obtainedMarks,
-  //     obtainedPercent,
-  //     verdict,
-  //   };
-  
-  //   if (user && params.id) {
-  //     const correctAnswerIds = correctAnswers.map(q => q?.id || "");  
-  //     const wrongAnswerIds = wrongAnswers.map(q => q?.id || "");      
-  
-  //     const reportData = {
-  //       quiz: params.id,
-  //       result: {
-  //         ...tempResult,
-  //         correctAnswers: correctAnswerIds,
-  //         wrongAnswers: wrongAnswerIds,
-  //       },
-  //       user: user.uid,
-  //       createdAt: new Date(),
-  //     };
-  
-  //     // Log each field to ensure none of them are undefined
-  //     console.log('Quiz ID:', params.id);
-  //     console.log('Result:', tempResult);
-  //     console.log('User ID:', user.uid);
-  //     console.log('Correct Answer IDs:', correctAnswerIds);
-  //     console.log('Wrong Answer IDs:', wrongAnswerIds);
-  
-  //     if (correctAnswerIds.includes("") || wrongAnswerIds.includes("")) {
-  //       console.error("Some questions do not have valid IDs");
-  //       return;
-  //     }
-  
-  //     try {
-  //       await addDoc(collection(db, "Reports"), reportData);
-  //       console.log("Report saved successfully");
-  //     } catch (error) {
-  //       console.error("Error saving report: ", error);
-  //     }
-  //   } else {
-  //     console.error("No user signed in or quiz ID missing");
-  //   }
-  
-  //   setResult(tempResult);
-  //   setViewSet("result");
-  //   setShowModal(true);
-  // };
-
-useEffect(() => {
- const getExamData = async () => {
-    try {
-      dispatch(ShowLoading());
-      const quizRef = doc(db, "Quizzes", params.id);
-      const quizSnapshot = await getDoc(quizRef);
-  
-      if (quizSnapshot.exists()) {
-        const quizData = quizSnapshot.data();
-        setExamData(quizData);
-  
-        const questionIds = quizData.question;
-        const questionPromises = questionIds.map(async (questionId) => {
-          const questionRef = doc(db, "Questions", questionId);
-          const questionSnapshot = await getDoc(questionRef);
-          return { ...questionSnapshot.data(), id: questionSnapshot.id }; // Add ID to each question object
-        });
-  
-        const fetchedQuestions = await Promise.all(questionPromises);
-        setQuestions(fetchedQuestions);
-        setSecondsLeft(quizData.duration);
-      } else {
-        message.error("Quiz not found!");
+          const fetchedQuestions = await Promise.all(questionPromises);
+          setQuestions(fetchedQuestions);
+          setSecondsLeft(quizData.duration);
+        } else {
+          message.error("Quiz not found!");
+        }
+        dispatch(HideLoading());
+      } catch (error) {
+        dispatch(HideLoading());
+        message.error(error.message);
       }
-      dispatch(HideLoading());
-    } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
-    }
-  };
-  
+    };
+
     if (params.id) {
       getExamData();
     }
   }, [params.id, dispatch]);
- 
-  
+
   const calculateResult = async (render) => {
     let correctAnswers = [];
     let wrongAnswers = [];
-  
+
     questions.forEach((question, index) => {
       if (question.correctOption.toString() === selectedOptions[index]) {
         correctAnswers.push(question);
@@ -229,16 +84,16 @@ useEffect(() => {
         wrongAnswers.push(question);
       }
     });
-  
+
     const perQueMarks = examData.totalMarks / questions.length;
     const obtainedMarks = correctAnswers.length * perQueMarks;
     const obtainedPercent = (obtainedMarks / examData.totalMarks) * 100;
-  
+
     let verdict = "Pass";
     if (obtainedMarks < parseInt(examData.passingMarks)) {
       verdict = "Fail";
     }
-  
+
     const tempResult = {
       correctAnswers,
       wrongAnswers,
@@ -246,11 +101,11 @@ useEffect(() => {
       obtainedPercent,
       verdict,
     };
-  
+
     if (user && params.id && render) {
-      const correctAnswerIds = correctAnswers.map(q => q.id);  
-      const wrongAnswerIds = wrongAnswers.map(q => q.id);      
-  
+      const correctAnswerIds = correctAnswers.map(q => q.id);
+      const wrongAnswerIds = wrongAnswers.map(q => q.id);
+
       const reportData = {
         quiz: params.id,
         result: {
@@ -261,7 +116,7 @@ useEffect(() => {
         user: user.uid,
         createdAt: new Date(),
       };
-  
+
       try {
         await addDoc(collection(db, "Reports"), reportData);
         console.log("Report saved successfully");
@@ -271,45 +126,42 @@ useEffect(() => {
     } else {
       console.error("No user signed in or quiz ID missing");
     }
-  
+
     setResult(tempResult);
     setViewSet("result");
     setShowModal(true);
   };
 
-
   useEffect(() => {
     if (viewSet === "result") {
-      console.log("useEffect viewset")
       calculateResult(true);
     }
   }, [viewSet]);
 
   useEffect(() => {
     if (view === "games" && viewSet !== "result" && viewSet !== "review") {
-      // Initial delay before showing the first question
       const initialDelay = setTimeout(() => {
         setShowModal(true);
         setSelectedQuestionIndex(0);
+        startQuestionTimer();
 
         const timerId = setInterval(() => {
           setSelectedQuestionIndex((prevIndex) => {
             if (prevIndex < questions.length - 1) {
               const nextIndex = prevIndex + 1;
               setShowModal(true);
+              startQuestionTimer();
               return nextIndex;
             } else {
               clearInterval(timerId);
-              console.log("generate questions")
               calculateResult(false);
               return prevIndex;
             }
           });
-        }, 5000);
+        }, 30000); 
 
         setQuestionTimerId(timerId);
-      }, 5000); // Delay before the first question
-
+      }, 5000); 
       return () => {
         clearTimeout(initialDelay);
         clearInterval(questionTimerId);
@@ -317,15 +169,39 @@ useEffect(() => {
     }
   }, [viewSet, view, questions.length]);
 
+  const startQuestionTimer = () => {
+    setSecondsLeft(30); // Set initial seconds left for each question
+    const id = setInterval(() => {
+      setSecondsLeft((prevSeconds) => {
+        if (prevSeconds > 0) {
+          return prevSeconds - 1;
+        } else {
+          clearInterval(id);
+          handleSkip(); // Automatically skip to the next question when time is up
+          return 0;
+        }
+      });
+    }, 1000); // Countdown interval is set to 1 second
+    setIntervalId(id);
+  };
+
   const handleAnswerSelection = (option) => {
+    clearInterval(intervalId); // Clear current timer when an answer is selected
     setSelectedOptions({
       ...selectedOptions,
       [selectedQuestionIndex]: option,
     });
     setShowModal(false);
   };
+
+  const handleSkip = () => {
+    clearInterval(intervalId); // Clear current timer when skipping
+    setShowModal(false);
+    setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
+  };
+
   const resetGame = () => {
-    window.location.href = window.location.href;
+    window.location.href = window.location.href; // Refresh the page to reset the exam
   };
 
   return (
@@ -339,18 +215,21 @@ useEffect(() => {
           <Instructions examData={examData} setView={setView} />
         )}
 
-        {view === "games" && <div style={{display:"grid"}}>
-          {examData.subject === "lghUFzzvSajZGa7ETLhp" ? (
-            <SudokuGame />
-          ):examData.subject === "pQ7y5vpVMuNDN8JV2IMC" ?(
-            <WhackAMole />
-          ) : examData.subject === "YQ5bhiV3ALXaCSCdtnS7" ?(
-            <WordGridGame />
-          ) : examData.subject === "jhj6EiD4OmYQCe3YniKk" ?(
-            <ConnectFourGame />
-          ) : <></>}
-      {/* <button className="primary-outlined-btn" style={{placeSelf:"center"}} onClick={resetGame}>Reset</button> */}
-        </div>}
+        {view === "games" && (
+          <div style={{ display: "grid" }}>
+            {gameType === "sudoku" ? (
+              <SudokuGame />
+            ) : gameType === "whackamole" ? (
+              <WhackAMole />
+            ) : gameType === "wordguess" ? (
+              <WordGridGame />
+            ) : gameType === "connect4" ? (
+              <ConnectFourGame />
+            ) : (
+              <p>Unknown game type</p>
+            )}
+          </div>
+        )}
 
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} header="Question" size="xlarge">
           {viewSet === "result" ? (
@@ -366,9 +245,6 @@ useEffect(() => {
                   <h1 className="text-md">VERDICT : {result.verdict}</h1>
 
                   <div className="flex gap-2 mt-2">
-                    {/* <button className="primary-outlined-btn" onClick={() => setShowModal(false)}>
-                      Resume Game
-                    </button> */}
                     <button className="primary-outlined-btn" onClick={resetGame}>
                       Retake Exam
                     </button>
@@ -402,31 +278,40 @@ useEffect(() => {
             </div>
           ) : viewSet === "review" ? (
             <div className="flex flex-col gap-2">
-              <div style={{ display: "grid", gap: "2vh", maxHeight: "50vh", overflow: "auto", msOverflowStyle: "none", scrollbarWidth: "none" }}>
-              {questions.map((question, index) => {
-                const isCorrect = question.correctOption.toString() === selectedOptions[index];
-                return (
-                  <div
-                    className={`flex flex-col gap-1 p-2 ${isCorrect ? "bg-success" : "bg-error"}`}
-                    key={index}
-                  >
-                    <h1 className="text-xl">
-                      {index + 1} : {question.name}
-                    </h1>
-                    <h1 className="text-md">Submitted Answer : {selectedOptions[index]}</h1>
-                    <h1 className="text-md">Correct Answer : {question.correctOption}</h1>
-                  </div>
-                );
-              })}
+              <div
+                style={{
+                  display: "grid",
+                  gap: "2vh",
+                  maxHeight: "50vh",
+                  overflow: "auto",
+                  msOverflowStyle: "none",
+                  scrollbarWidth: "none",
+                }}
+              >
+                {questions.map((question, index) => {
+                  const isCorrect = question.correctOption.toString() === selectedOptions[index];
+                  return (
+                    <div
+                      className={`flex flex-col gap-1 p-2 ${isCorrect ? "bg-success" : "bg-error"}`}
+                      key={index}
+                    >
+                      <h1 className="text-xl">
+                        {index + 1} : {question.name}
+                      </h1>
+                      <h1 className="text-md">Submitted Answer : {selectedOptions[index]}</h1>
+                      <h1 className="text-md">Correct Answer : {question.correctOption}</h1>
+                    </div>
+                  );
+                })}
               </div>
-              <div style={{display:"flex", placeContent:"center", gap:"2vw"}}>
-              <button className="primary-outlined-btn" onClick={resetGame}>
-                      Retake Exam
-                    </button>
-              <button className="primary-contained-btn" onClick={() => setShowModal(false)}>
-                      Resume Game
-                    </button>
-            </div>
+              <div style={{ display: "flex", placeContent: "center", gap: "2vw" }}>
+                <button className="primary-outlined-btn" onClick={resetGame}>
+                  Retake Exam
+                </button>
+                <button className="primary-contained-btn" onClick={() => setShowModal(false)}>
+                  Resume Game
+                </button>
+              </div>
             </div>
           ) : (
             questions[selectedQuestionIndex] && (
@@ -436,26 +321,32 @@ useEffect(() => {
                 </h1>
                 <div className="divider"></div>
                 <div className="flex flex-col gap-2">
-                  {Object.keys(questions[selectedQuestionIndex]?.options).sort().map((option) => (
-                    <div
-                      key={option}
-                      className={`flex gap-2 flex-col ${
-                        selectedOptions[selectedQuestionIndex] === option ? "selected-option" : "option"
-                      }`}
-                      onClick={() => handleAnswerSelection(option)}
-                    >
-                      <h1 className="text-xl">
-                        {option} : {questions[selectedQuestionIndex]?.options[option]}
-                      </h1>
-                    </div>
-                  ))}
+                  {Object.keys(questions[selectedQuestionIndex]?.options)
+                    .sort()
+                    .map((option) => (
+                      <div
+                        key={option}
+                        className={`flex gap-2 flex-col ${
+                          selectedOptions[selectedQuestionIndex] === option ? "selected-option" : "option"
+                        }`}
+                        onClick={() => handleAnswerSelection(option)}
+                      >
+                        <h1 className="text-xl">
+                          {option} : {questions[selectedQuestionIndex]?.options[option]}
+                        </h1>
+                      </div>
+                    ))}
                 </div>
+                <div className="text-center text-lg mt-2">
+                  Time left: {secondsLeft} seconds
+                </div>
+                <button className="primary-contained-btn" onClick={handleSkip}>
+                  Skip
+                </button>
               </div>
             )
           )}
         </Modal>
-
-        
       </div>
     )
   );
