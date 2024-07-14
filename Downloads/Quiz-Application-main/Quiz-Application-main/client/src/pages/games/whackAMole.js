@@ -57,7 +57,7 @@ const WhackAMole = () => {
      ) : (
         <div className="game-over">
           <h2>Game Over!</h2>
-          {/* <button className="primary-outlined-btn" onClick={resetGame}>Restart</button> */}
+          <button className="primary-outlined-btn" onClick={resetGame}>Restart</button>
         </div>
       )}
     </div>
