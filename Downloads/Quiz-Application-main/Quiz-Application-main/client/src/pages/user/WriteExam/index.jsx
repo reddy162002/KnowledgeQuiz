@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { doc, getDoc, addDoc, collection } from "firebase/firestore";
 import { db, auth } from "../../../components/firebase";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
@@ -21,7 +21,6 @@ function WriteExam() {
   const [viewSet, setViewSet] = useState("instructions");
   const [view, setView] = useState("instructions");
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [timeUp, setTimeUp] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const dispatch = useDispatch();
   const params = useParams();
@@ -57,7 +56,6 @@ function WriteExam() {
 
           const fetchedQuestions = await Promise.all(questionPromises);
           setQuestions(fetchedQuestions);
-          setSecondsLeft(quizData.duration);
         } else {
           message.error("Quiz not found!");
         }
@@ -74,62 +72,63 @@ function WriteExam() {
   }, [params.id, dispatch]);
 
   const calculateResult = async (render) => {
-    let correctAnswers = [];
-    let wrongAnswers = [];
+    try {
+      let correctAnswers = [];
+      let wrongAnswers = [];
 
-    questions.forEach((question, index) => {
-      if (question.correctOption.toString() === selectedOptions[index]) {
-        correctAnswers.push(question);
-      } else {
-        wrongAnswers.push(question);
+      questions.forEach((question, index) => {
+        if (question.correctOption.toString() === selectedOptions[index]) {
+          correctAnswers.push(question);
+        } else {
+          wrongAnswers.push(question);
+        }
+      });
+
+      const perQueMarks = examData.totalMarks / questions.length;
+      const obtainedMarks = correctAnswers.length * perQueMarks;
+      const obtainedPercent = (obtainedMarks / examData.totalMarks) * 100;
+
+      let verdict = "Pass";
+      if (obtainedMarks < parseInt(examData.passingMarks)) {
+        verdict = "Fail";
       }
-    });
 
-    const perQueMarks = examData.totalMarks / questions.length;
-    const obtainedMarks = correctAnswers.length * perQueMarks;
-    const obtainedPercent = (obtainedMarks / examData.totalMarks) * 100;
-
-    let verdict = "Pass";
-    if (obtainedMarks < parseInt(examData.passingMarks)) {
-      verdict = "Fail";
-    }
-
-    const tempResult = {
-      correctAnswers,
-      wrongAnswers,
-      obtainedMarks,
-      obtainedPercent,
-      verdict,
-    };
-
-    if (user && params.id && render) {
-      const correctAnswerIds = correctAnswers.map(q => q.id);
-      const wrongAnswerIds = wrongAnswers.map(q => q.id);
-
-      const reportData = {
-        quiz: params.id,
-        result: {
-          ...tempResult,
-          correctAnswers: correctAnswerIds,
-          wrongAnswers: wrongAnswerIds,
-        },
-        user: user.uid,
-        createdAt: new Date(),
+      const tempResult = {
+        correctAnswers,
+        wrongAnswers,
+        obtainedMarks,
+        obtainedPercent,
+        verdict,
       };
 
-      try {
+      if (user && params.id && render) {
+        const correctAnswerIds = correctAnswers.map((q) => q.id);
+        const wrongAnswerIds = wrongAnswers.map((q) => q.id);
+
+        const reportData = {
+          quiz: params.id,
+          result: {
+            ...tempResult,
+            correctAnswers: correctAnswerIds,
+            wrongAnswers: wrongAnswerIds,
+          },
+          user: user.uid,
+          createdAt: new Date(),
+        };
+
         await addDoc(collection(db, "Reports"), reportData);
         console.log("Report saved successfully");
-      } catch (error) {
-        console.error("Error saving report: ", error);
+      } else {
+        console.error("No user signed in or quiz ID missing");
       }
-    } else {
-      console.error("No user signed in or quiz ID missing");
-    }
 
-    setResult(tempResult);
-    setViewSet("result");
-    setShowModal(true);
+      setResult(tempResult);
+      setViewSet("result");
+      setShowModal(true);
+    } catch (error) {
+      console.error("Error calculating or saving result: ", error);
+      message.error("Failed to calculate or save result.");
+    }
   };
 
   useEffect(() => {
@@ -158,10 +157,10 @@ function WriteExam() {
               return prevIndex;
             }
           });
-        }, 30000); 
+        }, 40000); // 30 seconds for question + 10 seconds gap
 
         setQuestionTimerId(timerId);
-      }, 5000); 
+      }, 8000); // Initial delay to start the first question
       return () => {
         clearTimeout(initialDelay);
         clearInterval(questionTimerId);
@@ -192,6 +191,13 @@ function WriteExam() {
       [selectedQuestionIndex]: option,
     });
     setShowModal(false);
+
+    // Delay the next question for 10 seconds
+    setTimeout(() => {
+      setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
+      startQuestionTimer(); // Start the timer for the next question
+      setShowModal(true);
+    }, 10000); // 10-second delay
   };
 
   const handleSkip = () => {
@@ -231,7 +237,12 @@ function WriteExam() {
           </div>
         )}
 
-        <Modal isOpen={showModal} onClose={() => setShowModal(false)} header="Question" size="xlarge">
+        <Modal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          header="Question"
+          size="xlarge"
+        >
           {viewSet === "result" ? (
             <div className="flex items-center mt-2 justify-center result">
               <div className="flex flex-col gap-2">
@@ -248,7 +259,10 @@ function WriteExam() {
                     <button className="primary-outlined-btn" onClick={resetGame}>
                       Retake Exam
                     </button>
-                    <button className="primary-contained-btn" onClick={() => setViewSet("review")}>
+                    <button
+                      className="primary-contained-btn"
+                      onClick={() => setViewSet("review")}
+                    >
                       Review Answers
                     </button>
                   </div>
@@ -289,26 +303,38 @@ function WriteExam() {
                 }}
               >
                 {questions.map((question, index) => {
-                  const isCorrect = question.correctOption.toString() === selectedOptions[index];
+                  const isCorrect =
+                    question.correctOption.toString() === selectedOptions[index];
                   return (
                     <div
-                      className={`flex flex-col gap-1 p-2 ${isCorrect ? "bg-success" : "bg-error"}`}
+                      className={`flex flex-col gap-1 p-2 ${
+                        isCorrect ? "bg-success" : "bg-error"
+                      }`}
                       key={index}
                     >
                       <h1 className="text-xl">
                         {index + 1} : {question.name}
                       </h1>
-                      <h1 className="text-md">Submitted Answer : {selectedOptions[index]}</h1>
-                      <h1 className="text-md">Correct Answer : {question.correctOption}</h1>
+                      <h1 className="text-md">
+                        Submitted Answer : {selectedOptions[index]}
+                      </h1>
+                      <h1 className="text-md">
+                        Correct Answer : {question.correctOption}
+                      </h1>
                     </div>
                   );
                 })}
               </div>
-              <div style={{ display: "flex", placeContent: "center", gap: "2vw" }}>
+              <div
+                style={{ display: "flex", placeContent: "center", gap: "2vw" }}
+              >
                 <button className="primary-outlined-btn" onClick={resetGame}>
                   Retake Exam
                 </button>
-                <button className="primary-contained-btn" onClick={() => setShowModal(false)}>
+                <button
+                  className="primary-contained-btn"
+                  onClick={() => setShowModal(false)}
+                >
                   Resume Game
                 </button>
               </div>
@@ -317,7 +343,8 @@ function WriteExam() {
             questions[selectedQuestionIndex] && (
               <div className="flex flex-col gap-2">
                 <h1 className="text-2xl">
-                  {selectedQuestionIndex + 1} : {questions[selectedQuestionIndex]?.name}
+                  {selectedQuestionIndex + 1} :{" "}
+                  {questions[selectedQuestionIndex]?.name}
                 </h1>
                 <div className="divider"></div>
                 <div className="flex flex-col gap-2">
@@ -327,7 +354,9 @@ function WriteExam() {
                       <div
                         key={option}
                         className={`flex gap-2 flex-col ${
-                          selectedOptions[selectedQuestionIndex] === option ? "selected-option" : "option"
+                          selectedOptions[selectedQuestionIndex] === option
+                            ? "selected-option"
+                            : "option"
                         }`}
                         onClick={() => handleAnswerSelection(option)}
                       >
