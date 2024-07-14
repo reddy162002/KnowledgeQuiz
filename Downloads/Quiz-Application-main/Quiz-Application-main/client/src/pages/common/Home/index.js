@@ -60,9 +60,11 @@ function Home() {
 
   const handleSubjectQuiz = (subjectId, name) => {
     setSubjectQuiz(true);
-    setSubjectName(name);
+    const correctedName = name === 'Google Go' ? 'Python' : name;
+    setSubjectName(correctedName);
     fetchSubjectQuizzes(subjectId);
   };
+  
 
   const startQuiz = (quizId) => {
     navigate(`/user/write-exam/${quizId}?game=${selectedGame}`);
@@ -99,7 +101,7 @@ function Home() {
             loadingSubjects ? (
               <p>Loading subjects...</p>
             ) : (
-              subjects.filter(subject => subject.name !== 'Google Go').map((subject) => (
+              subjects.filter(subject => subject.name !== 'Python').map((subject) => (
                 <Card
                   key={subject.id}
                   height="250px"
@@ -107,7 +109,7 @@ function Home() {
                   borderStyle="normalselected"
                 >
                   <div style={{ display: "grid", gap: "2vh", padding: "1.5vh", textAlign: "center" }}>
-                    <h1 style={{ fontSize: "2.5vh" }}>{subject.name}</h1>
+                  <h1 style={{ fontSize: "2.5vh" }}>{subject.name === 'Google Go' ? 'Python' : subject.name}</h1>
                     <button
                       className="primary-outlined-btn"
                       onClick={() => handleSubjectQuiz(subject.id, subject.name)}
