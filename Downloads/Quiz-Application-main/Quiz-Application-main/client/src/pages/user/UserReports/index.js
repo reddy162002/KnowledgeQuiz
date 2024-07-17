@@ -4,7 +4,7 @@ import { message, Table, Button, Tag, Spin } from "antd";
 import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import { db, auth } from "../../../components/firebase";
-import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
+import { collection, getDocs, doc,getDoc, query, where } from "firebase/firestore";
 import { PieChartJS } from "../../../components/ChartsJS/PieChart";
 
 function QuizStatistics({ reportsData }) {
@@ -138,18 +138,33 @@ function UserReports() {
       render: (text, record) => <>{record.exam.name}</>,
     },
     {
-      title: "Total Marks",
+      title: "Game Name",
+      dataIndex: "gameName",
+      render: (text, record) => <>{record.result.gamename}</>, // Assuming 'gamename' is where game name is stored
+    },
+    {
+      title: "Total Questions",
       dataIndex: "totalQuestions",
+      render: (text, record) => <>{record.result.totalQuestions}</>, // Assuming 'totalQuestions' is where total questions count is stored
+    },
+    {
+      title: "Answered Quesions",
+      dataIndex: "correctAnswers",
+      render: (text, record) => <>{record.result.correctCount}</>,
+    },
+    {
+      title: "Total Marks",
+      dataIndex: "totalMarks",
       render: (text, record) => <>{record.exam.totalMarks}</>,
     },
     {
       title: "Passing Marks",
-      dataIndex: "correctAnswers",
+      dataIndex: "passingMarks",
       render: (text, record) => <>{record.exam.passingMarks}</>,
     },
     {
       title: "Obtained Marks",
-      dataIndex: "correctAnswers",
+      dataIndex: "obtainedMarks",
       render: (text, record) => <>{record.result.obtainedMarks}</>,
     },
     {
@@ -162,7 +177,7 @@ function UserReports() {
         } else if (verdict === "fail" || verdict === "failed") {
           return <Tag color="red">Failed</Tag>;
         }
-        return <Tag>{record.result.verdict}</Tag>; // Default tag for other verdicts
+        return <Tag>{record.result.verdict}</Tag>;
       },
     },
   ];
