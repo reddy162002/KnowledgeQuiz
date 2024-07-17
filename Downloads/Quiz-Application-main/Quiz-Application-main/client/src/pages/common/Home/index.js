@@ -1,156 +1,216 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import PageTitle from "../../../components/PageTitle";
-import Card from "../../../components/Studentcard/card";
+import { message, Table, Select } from "antd";
+import { useDispatch } from "react-redux";
+import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
+import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
 import { db } from "../../../components/firebase";
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import moment from "moment";
 
-import connect4Image from "../../../images/connect4.jpeg";
-import sudokuImage from '../../../images/sudoku.png';
-import whackamoleImage from '../../../images/whackamole.png';
-import wordguessImage from '../../../images/wordguess.jpeg';
+const { Option } = Select;
 
-function Home() {
-  const navigate = useNavigate();
-  const [games] = useState([
-    { id: "sudoku", name: "Sudoku Game", image: sudokuImage },
-    { id: "whackamole", name: "Whack-a-Mole", image: whackamoleImage },
-    { id: "wordguess", name: "Word Guess", image: wordguessImage },
-    { id: "connect4", name: "Connect Four", image: connect4Image }
-  ]);
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [loadingSubjects, setLoadingSubjects] = useState(false);
+function LeaderBoard() {
+  const [reportsData, setReportsData] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
-  const [loadingQuizzes, setLoadingQuizzes] = useState(false);
-  const [subjectQuiz, setSubjectQuiz] = useState(false);
-  const [subjectName, setSubjectName] = useState("");
+  const dispatch = useDispatch();
+  const [selectedQuiz, setSelectedQuiz] = useState("");
 
-  const fetchSubjects = async () => {
+  const columns = [
+    
+    {
+      title: "Exam Name",
+      dataIndex: "examName",
+      render: (text, record) => {
+        if (selectedQuiz === "" && record.exam?.name) {
+          return <>{record.exam.name}</>;
+        } else {
+          return null; // Render nothing if selectedQuiz is not empty and exam name is not available
+        }
+      },
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Rank",
+      dataIndex: "ranking",
+      render: (text, record, index) => <>{index + 1}</>,
+      shouldDisplay: selectedQuiz !== "",
+    },
+    {
+      title: "User",
+      dataIndex: "userName",
+      render: (text, record) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            src={record.user?.photo}
+            style={{ width: 32, height: 32, borderRadius: '50%', marginRight: 8 }}
+            alt={`${record.user?.firstName} ${record.user?.lastName}`}
+          />
+          {record.user?.firstName} {record.user?.lastName}
+        </div>
+      ),
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Date",
+      dataIndex: "date",
+      render: (text, record) => (
+        <>{moment(record.createdAt?.toDate()).format("DD-MM-YYYY hh:mm:ss")}</>
+      ),
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Total Marks",
+      dataIndex: "totalQuestions",
+      render: (text, record) => <>{record.exam?.totalMarks}</>,
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Passing Marks",
+      dataIndex: "correctAnswers",
+      render: (text, record) => <>{record.exam?.passingMarks}</>,
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Obtained Marks",
+      dataIndex: "correctAnswers",
+      render: (text, record) => <>{record.result?.obtainedMarks}</>,
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+    {
+      title: "Verdict",
+      dataIndex: "verdict",
+      render: (text, record) => <>{record.result?.verdict}</>,
+      shouldDisplay: true, // Always display this column in the columns definition
+    },
+  ];
+
+  const getData = async () => {
     try {
-      setLoadingSubjects(true);
-      const querySnapshot = await getDocs(collection(db, "subjects"));
-      const subjectsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSubjects(subjectsData);
-      setLoadingSubjects(false);
+      dispatch(ShowLoading());
+      const reportsSnapshot = await getDocs(collection(db, "Reports"));
+      const reportsData = await Promise.all(
+        reportsSnapshot.docs.map(async (reportDoc) => {
+          const reportData = reportDoc.data();
+          const userDoc = await getDoc(doc(db, "Users", reportData.user));
+          const quizDoc = await getDoc(doc(db, "Quizzes", reportData.quiz));
+          return {
+            ...reportData,
+            user: userDoc.exists() ? userDoc.data() : {},
+            exam: quizDoc.exists() ? quizDoc.data() : {},
+            id: reportDoc.id,
+          };
+        })
+      );
+
+      const highestScores = reportsData.reduce((acc, report) => {
+        const key = `${report.user?.email}-${report.exam?.name}`;
+        if (!acc[key] || acc[key].result?.obtainedMarks < report.result?.obtainedMarks) {
+          acc[key] = report;
+        }
+        return acc;
+      }, {});
+
+      const filteredReportsData = Object.values(highestScores);
+      filteredReportsData.sort((a, b) => b.result?.obtainedMarks - a.result?.obtainedMarks);
+
+      setReportsData(filteredReportsData);
+      dispatch(HideLoading());
     } catch (error) {
-      console.error("Error fetching subjects: ", error);
-      setLoadingSubjects(false);
+      dispatch(HideLoading());
+      message.error(error.message);
     }
   };
 
-  const fetchSubjectQuizzes = async (subjectId) => {
+  const getQuizzes = async () => {
     try {
-      setLoadingQuizzes(true);
-      const q = query(collection(db, 'Quizzes'), where('subject', '==', `${subjectId}`));
-      const querySnapshot = await getDocs(q);
-      const quizzesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setQuizzes(quizzesData);
-      setLoadingQuizzes(false);
+      const quizzesSnapshot = await getDocs(collection(db, "Quizzes"));
+      const quizzesList = quizzesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setQuizzes(quizzesList);
     } catch (error) {
-      console.error('Error fetching quizzes: ', error);
-      setLoadingQuizzes(false);
+      message.error(error.message);
     }
   };
 
-  const handleGameSelect = (gameId) => {
-    setSelectedGame(gameId);
-    fetchSubjects();
-  };
+  useEffect(() => {
+    getData();
+    getQuizzes();
+  }, []);
 
-  const handleSubjectQuiz = (subjectId, name) => {
-    setSubjectQuiz(true);
-    const correctedName = name === 'Google Go' ? 'Python' : name;
-    setSubjectName(correctedName);
-    fetchSubjectQuizzes(subjectId);
-  };
-  
+  const handleQuizChange = async (quizId) => {
+    setSelectedQuiz(quizId);
+    if (quizId === "") {
+      getData();
+    } else {
+      try {
+        dispatch(ShowLoading());
+        const reportsSnapshot = await getDocs(
+          query(collection(db, "Reports"), where("quiz", "==", quizId))
+        );
+        const reportsData = await Promise.all(
+          reportsSnapshot.docs.map(async (reportDoc) => {
+            const reportData = reportDoc.data();
+            const userDoc = await getDoc(doc(db, "Users", reportData.user));
+            const quizDoc = await getDoc(doc(db, "Quizzes", reportData.quiz));
+            return {
+              ...reportData,
+              user: userDoc.exists() ? userDoc.data() : {},
+              exam: quizDoc.exists() ? quizDoc.data() : {},
+              id: reportDoc.id,
+            };
+          })
+        );
 
-  const startQuiz = (quizId) => {
-    navigate(`/user/write-exam/${quizId}?game=${selectedGame}`);
+        const highestScores = reportsData.reduce((acc, report) => {
+          const key = `${report.user?.email}-${report.exam?.name}`;
+          if (!acc[key] || acc[key].result?.obtainedMarks < report.result?.obtainedMarks) {
+            acc[key] = report;
+          }
+          return acc;
+        }, {});
+
+        const filteredReportsData = Object.values(highestScores);
+        filteredReportsData.sort((a, b) => b.result?.obtainedMarks - a.result?.obtainedMarks);
+
+        setReportsData(filteredReportsData);
+        dispatch(HideLoading());
+      } catch (error) {
+        dispatch(HideLoading());
+        message.error(error.message);
+      }
+    }
   };
 
   return (
-    <div style={{ margin: "1vh 1vw" }}>
-      <div style={{ padding: "0vh 2vh" }}>
-        <PageTitle title={!selectedGame ? "Games" : !subjectQuiz ? "Subjects" : `${subjectName} Quizzes`} />
-      </div>
-      <div style={{ padding: "0.5vh 2vh" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "1vw" }}>
-          {!selectedGame ? (
-            games.map((game) => (
-              <Card
-                key={game.id}
-                height="250px"
-                width="100%"
-                borderStyle="normalselected"
-              >
-                <div style={{ display: "grid", gap: "2vh", padding: "1.5vh", textAlign: "center" }}>
-                  <img src={game.image} alt={game.name} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
-                  <h1 style={{ fontSize: "2.5vh" }}>{game.name}</h1>
-                  <button
-                    className="primary-outlined-btn"
-                    onClick={() => handleGameSelect(game.id)}
-                  >
-                    Select Game
-                  </button>
-                </div>
-              </Card>
-            ))
-          ) : !subjectQuiz ? (
-            loadingSubjects ? (
-              <p>Loading subjects...</p>
-            ) : (
-              subjects.filter(subject => subject.name !== 'Python').map((subject) => (
-                <Card
-                  key={subject.id}
-                  height="250px"
-                  width="100%"
-                  borderStyle="normalselected"
-                >
-                  <div style={{ display: "grid", gap: "2vh", padding: "1.5vh", textAlign: "center" }}>
-                  <h1 style={{ fontSize: "2.5vh" }}>{subject.name === 'Google Go' ? 'Python' : subject.name}</h1>
-                    <button
-                      className="primary-outlined-btn"
-                      onClick={() => handleSubjectQuiz(subject.id, subject.name)}
-                    >
-                      View Quizzes
-                    </button>
-                  </div>
-                </Card>
-              ))
-            )
-          ) : (
-            loadingQuizzes ? (
-              <p>Loading quizzes...</p>
-            ) : (
-              quizzes.map((quiz) => (
-                <Card
-                  key={quiz.id}
-                  height="250px"
-                  width="100%"
-                  borderStyle="normalselected"
-                >
-                  <div style={{ display: "grid", gap: "1vh", padding: "1.5vh", textAlign: "center" }}>
-                    <h1 className="text-2xl">{quiz.name}</h1>
-                    <h1 className="text-md">Total Marks: {quiz.totalMarks}</h1>
-                    <h1 className="text-md">Passing Marks: {quiz.passingMarks}</h1>
-                    <h1 className="text-md">Duration: {quiz.duration}</h1>
-                    <button
-                      className="primary-outlined-btn"
-                      onClick={() => startQuiz(quiz.id)}
-                    >
-                      Start Quiz
-                    </button>
-                  </div>
-                </Card>
-              ))
-            )
-          )}
+    <div>
+      <PageTitle title="Reports" />
+      <div style={{ padding: "0vh 2vw" }}>
+        <div className="flex gap-2 mb-4">
+          <Select
+            value={selectedQuiz}
+            onChange={handleQuizChange}
+            placeholder="Select Quiz"
+            style={{ width: 200 }}
+          >
+            <Option value="">All Quizzes</Option>
+            {quizzes.map((quiz) => (
+              <Option key={quiz.id} value={quiz.id}>
+                {quiz.name}
+              </Option>
+            ))}
+          </Select>
         </div>
+        <Table
+          columns={columns.filter((col) => col.shouldDisplay)}
+          dataSource={reportsData}
+          pagination={{ pageSize: 7 }}
+          className="mt-2"
+        />
       </div>
     </div>
   );
 }
 
-export default Home;
+export default LeaderBoard;
