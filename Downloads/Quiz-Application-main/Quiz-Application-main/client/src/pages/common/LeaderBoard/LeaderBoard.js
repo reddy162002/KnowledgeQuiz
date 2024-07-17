@@ -16,6 +16,7 @@ function LeaderBoard() {
   const [selectedQuiz, setSelectedQuiz] = useState("");
 
   const columns = [
+    
     {
       title: "Exam Name",
       dataIndex: "examName",
