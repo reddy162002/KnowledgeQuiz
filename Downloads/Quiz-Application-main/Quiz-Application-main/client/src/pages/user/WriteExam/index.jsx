@@ -70,58 +70,65 @@ function WriteExam() {
       getExamData();
     }
   }, [params.id, dispatch]);
-
   const calculateResult = async (render) => {
     try {
       let correctAnswers = [];
       let wrongAnswers = [];
-
+      let attemptedQuestions = 0;
+  
       questions.forEach((question, index) => {
-        if (question.correctOption.toString() === selectedOptions[index]) {
-          correctAnswers.push(question);
-        } else {
-          wrongAnswers.push(question);
+        if (selectedOptions[index] !== undefined) {
+          attemptedQuestions++;
+          if (question.correctOption.toString() === selectedOptions[index]) {
+            correctAnswers.push(question);
+          } else {
+            wrongAnswers.push(question);
+          }
         }
       });
-
+  
       const perQueMarks = examData.totalMarks / questions.length;
       const obtainedMarks = correctAnswers.length * perQueMarks;
       const obtainedPercent = (obtainedMarks / examData.totalMarks) * 100;
-
+  
       let verdict = "Pass";
       if (obtainedMarks < parseInt(examData.passingMarks)) {
         verdict = "Fail";
       }
-
+  
       const tempResult = {
         correctAnswers,
         wrongAnswers,
         obtainedMarks,
         obtainedPercent,
         verdict,
+        attemptedQuestions, // Added attempted questions count
       };
-
+  
       if (user && params.id && render) {
         const correctAnswerIds = correctAnswers.map((q) => q.id);
         const wrongAnswerIds = wrongAnswers.map((q) => q.id);
-
+  
         const reportData = {
           quiz: params.id,
           result: {
             ...tempResult,
             correctAnswers: correctAnswerIds,
             wrongAnswers: wrongAnswerIds,
+            correctCount: correctAnswers.length,
+            gamename: gameType,
+            totalQuestions: questions.length,
           },
           user: user.uid,
           createdAt: new Date(),
         };
-
+  
         await addDoc(collection(db, "Reports"), reportData);
         console.log("Report saved successfully");
       } else {
         console.error("No user signed in or quiz ID missing");
       }
-
+  
       setResult(tempResult);
       setViewSet("result");
       setShowModal(true);
@@ -130,6 +137,7 @@ function WriteExam() {
       message.error("Failed to calculate or save result.");
     }
   };
+  
 
   useEffect(() => {
     if (viewSet === "result") {
@@ -157,7 +165,7 @@ function WriteExam() {
               return prevIndex;
             }
           });
-        }, 40000); // 30 seconds for question + 10 seconds gap
+        }, 10000); // 30 seconds for question + 10 seconds gap
 
         setQuestionTimerId(timerId);
       }, 8000); // Initial delay to start the first question
@@ -191,19 +199,25 @@ function WriteExam() {
       [selectedQuestionIndex]: option,
     });
     setShowModal(false);
-
-    // Delay the next question for 10 seconds
+  
+    // Delay the next question for 5 seconds (modify the delay time as needed)
     setTimeout(() => {
       setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
       startQuestionTimer(); // Start the timer for the next question
       setShowModal(true);
-    }, 10000); // 10-second delay
+    }, 10000); // Changed delay from 10 seconds to 5 seconds
   };
-
+  
   const handleSkip = () => {
     clearInterval(intervalId); // Clear current timer when skipping
     setShowModal(false);
-    setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
+  
+    // Delay the next question for 5 seconds (modify the delay time as needed)
+    setTimeout(() => {
+      setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
+      startQuestionTimer(); // Start the timer for the next question
+      setShowModal(true);
+    }, 5000); // Changed delay from 10 seconds to 5 seconds
   };
 
   const resetGame = () => {
@@ -218,7 +232,8 @@ function WriteExam() {
         <div className="divider"></div>
 
         {view === "instructions" && (
-          <Instructions examData={examData} setView={setView} />
+          <Instructions examData={examData} setView={setView} gameType={gameType} />
+
         )}
 
         {view === "games" && (
@@ -249,6 +264,7 @@ function WriteExam() {
                 <h1 className="text-2xl">RESULT</h1>
                 <div className="divider"></div>
                 <div className="marks">
+                <h1 className="text-md">Attempted Questions : {result.attemptedQuestions}</h1> {/* Added Attempted Questions */}
                   <h1 className="text-md">Total Marks : {examData.totalMarks}</h1>
                   <h1 className="text-md">Obtained Marks : {result.obtainedMarks}</h1>
                   <h1 className="text-md">Wrong Answers : {result.wrongAnswers.length}</h1>
