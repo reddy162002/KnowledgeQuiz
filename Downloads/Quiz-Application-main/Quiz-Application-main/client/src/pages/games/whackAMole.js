@@ -2,10 +2,30 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-const WhackAMole = () => {
+const WhackAMole = ({ waitTime}) => {
   const [holes, setHoles] = useState(new Array(9).fill(false));
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(waitTime);
+
+  useEffect(() => {
+    console.log("secondsLeft updated:", secondsLeft);
+    if (secondsLeft > 0) {
+      const timerId = setInterval(() => {
+        setSecondsLeft((prevSeconds) => {
+          console.log("Prev secondsLeft:", prevSeconds);
+          return prevSeconds - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }
+  }, [secondsLeft]);
+
+  useEffect(() => {
+    console.log("waitTime updated:", waitTime);
+    setSecondsLeft(waitTime); // Reset secondsLeft when waitTime changes
+  }, [waitTime]);
 
   useEffect(() => {
     if (gameOver) return;
@@ -43,6 +63,9 @@ const WhackAMole = () => {
 
   return (
       <div className="game-container">
+        <div className="text-center">
+                  Next Question in : {secondsLeft} seconds
+                </div>
       <h1 style={{fontSize:"6vh", fontWeight:"550"}}>Score: {score}</h1>
       {!gameOver ? (
       <div className="grid">
