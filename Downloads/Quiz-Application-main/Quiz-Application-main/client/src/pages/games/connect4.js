@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-const ConnectFourGame = () => {
+const ConnectFourGame = ({ waitTime}) => {
   const rows = 6;
   const columns = 7;
   const [board, setBoard] = useState(
@@ -12,6 +12,26 @@ const ConnectFourGame = () => {
   );
   const [currentPlayer, setCurrentPlayer] = useState("Red");
   const [winner, setWinner] = useState(null);
+  const [secondsLeft, setSecondsLeft] = useState(waitTime);
+
+  useEffect(() => {
+    console.log("secondsLeft updated:", secondsLeft);
+    if (secondsLeft > 0) {
+      const timerId = setInterval(() => {
+        setSecondsLeft((prevSeconds) => {
+          console.log("Prev secondsLeft:", prevSeconds);
+          return prevSeconds - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }
+  }, [secondsLeft]);
+
+  useEffect(() => {
+    console.log("waitTime updated:", waitTime);
+    setSecondsLeft(waitTime); // Reset secondsLeft when waitTime changes
+  }, [waitTime]);
 
   useEffect(() => {
     if (currentPlayer === "Yellow" && !winner) {
@@ -213,7 +233,12 @@ const ConnectFourGame = () => {
         ))}
       </div>
       <button className="primary-outlined-btn" onClick={resetGame}>Reset Game</button>
+      <br></br>
+      <div className="text-center text-lg">
+                  Next Question in : {secondsLeft} seconds
+                </div>
     </div>
+    
   );
 };
 
