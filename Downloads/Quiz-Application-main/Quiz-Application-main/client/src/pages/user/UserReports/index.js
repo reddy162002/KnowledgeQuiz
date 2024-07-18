@@ -1,11 +1,32 @@
 import React, { useEffect, useState } from "react";
 import PageTitle from "../../../components/PageTitle";
-import { message, Table, Button, Tag, Spin } from "antd";
+import { message, Table, Button, Tag, Spin, Modal } from "antd";
 import { useDispatch } from "react-redux";
 import { HideLoading, ShowLoading } from "../../../redux/loaderSlice";
 import { db, auth } from "../../../components/firebase";
 import { collection, getDocs, doc,getDoc, query, where } from "firebase/firestore";
 import { PieChartJS } from "../../../components/ChartsJS/PieChart";
+import { BarChartJS } from "../../../components/ChartsJS/BarChart";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 
 function QuizStatistics({ reportsData }) {
   const [quizStats, setQuizStats] = useState([]);
@@ -129,6 +150,7 @@ function UserReports() {
   const [user, setUser] = useState(null);
   const [showQuizStats, setShowQuizStats] = useState(false);
   const [loading, setLoading] = useState(false); // State for loading indicator
+  const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
   const dispatch = useDispatch();
 
   const columns = [
@@ -193,7 +215,10 @@ function UserReports() {
           const reportData = reportDoc.data();
           const examDoc = await getDoc(doc(db, "Quizzes", reportData.quiz));
           reportData.exam = examDoc.data();
-          return reportData;
+          return {
+            ...reportData,
+            key: reportDoc.id, // Assign a unique key here
+          };
         })
       );
       setReportsData(reportsData);
@@ -221,6 +246,58 @@ function UserReports() {
   const verdictCounts = getVerdictCounts(reportsData);
   const chartData = prepareChartData(verdictCounts);
 
+  // Function to prepare game-specific chart data
+  const prepareGameChartData = () => {
+    const gameChartData = {};
+
+    reportsData.forEach((report) => {
+      const gameName = report.result.gamename; // Assuming 'gamename' is where game name is stored
+      const verdict = report.result.verdict.toLowerCase();
+
+      if (!gameChartData[gameName]) {
+        gameChartData[gameName] = {
+          Passed: 0,
+          Failed: 0,
+        };
+      }
+
+      if (verdict === "pass" || verdict === "passed") {
+        gameChartData[gameName].Passed++;
+      } else if (verdict === "fail" || verdict === "failed") {
+        gameChartData[gameName].Failed++;
+      }
+    });
+
+    return gameChartData;
+  };
+
+  const gameChartData = prepareGameChartData();
+
+  // Function to render game-specific bar charts
+  const renderGameCharts = () => {
+    return Object.keys(gameChartData).map((gameName, index) => (
+      <div key={index} style={{ marginBottom: "20px" }}>
+        <h3>{gameName} Quiz Results</h3>
+        <BarChartJS
+          chartData={{
+            labels: ["Passed", "Failed"],
+            datasets: [
+              {
+                label: `${gameName} Quiz Results`,
+                data: [gameChartData[gameName].Passed, gameChartData[gameName].Failed],
+                backgroundColor: ["#6CCA70", "#E4797B"],
+                hoverBackgroundColor: ["#66bb6a", "#e57373"],
+              },
+            ],
+          }}
+          title={`${gameName} Quiz Results`}
+          min = {0}
+          max = {50}
+        />
+      </div>
+    ));
+  };
+
   return (
     <div>
       <PageTitle title="Reports" />
@@ -229,8 +306,11 @@ function UserReports() {
         <Spin spinning={loading}> {/* Display loading spinner */}
           <Table columns={columns} dataSource={reportsData} pagination={{ pageSize: 7 }} />
         </Spin>
-        <div style={{ width: "400px", height: "400px", margin: "0 auto" }}>
+        <div style={{ width: "400px", height: "400px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <PieChartJS chartData={chartData} title="Verdict Distribution" />
+          <Button style={{marginTop: "20px"}} type="primary" onClick={() => setModalVisible(true)}>
+          View Game Statistics
+        </Button>
         </div>
       </div>
       <div style={{ margin: "0vh 2vw" }}>
@@ -239,6 +319,22 @@ function UserReports() {
         </Button>
         {showQuizStats && <QuizStatistics reportsData={reportsData} />}
       </div>
+
+       {/* Modal for displaying game-specific bar charts */}
+       <Modal
+        title="Game Statistics"
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        {renderGameCharts()}
+      </Modal>
+
+      {/* Button to open modal with game statistics */}
+      <div style={{ margin: "20px 0" }}>
+       
+      </div>
+
     </div>
   );
 }
