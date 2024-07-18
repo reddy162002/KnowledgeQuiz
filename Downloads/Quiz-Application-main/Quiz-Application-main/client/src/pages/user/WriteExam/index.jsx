@@ -29,6 +29,8 @@ function WriteExam() {
   const [questionTimerId, setQuestionTimerId] = useState(null);
   const [user, setUser] = useState();
   const gameType = new URLSearchParams(location.search).get("game");
+  const [waitTime, setWaitTime] = useState(5);
+  const [lifeLine, setLifeLine] = useState(2);
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
@@ -147,11 +149,11 @@ function WriteExam() {
 
   useEffect(() => {
     if (view === "games" && viewSet !== "result" && viewSet !== "review") {
+      setWaitTime(28);
       const initialDelay = setTimeout(() => {
         setShowModal(true);
         setSelectedQuestionIndex(0);
         startQuestionTimer();
-
         const timerId = setInterval(() => {
           setSelectedQuestionIndex((prevIndex) => {
             if (prevIndex < questions.length - 1) {
@@ -165,23 +167,25 @@ function WriteExam() {
               return prevIndex;
             }
           });
-        }, 10000); // 30 seconds for question + 10 seconds gap
+        }, 30000); // 30 seconds for question + 10 seconds gap
 
         setQuestionTimerId(timerId);
-      }, 8000); // Initial delay to start the first question
+      }, 30000); // Initial delay to start the first question
       return () => {
         clearTimeout(initialDelay);
         clearInterval(questionTimerId);
       };
     }
-  }, [viewSet, view, questions.length]);
+  }, [viewSet, view, questions.length, setWaitTime]);
 
   const startQuestionTimer = () => {
     setSecondsLeft(30); // Set initial seconds left for each question
     const id = setInterval(() => {
       setSecondsLeft((prevSeconds) => {
         if (prevSeconds > 0) {
-          return prevSeconds - 1;
+          // Ensure that the countdown is accurate by using the current state
+          const nextSeconds = prevSeconds - 1;
+          return nextSeconds;
         } else {
           clearInterval(id);
           handleSkip(); // Automatically skip to the next question when time is up
@@ -189,8 +193,10 @@ function WriteExam() {
         }
       });
     }, 1000); // Countdown interval is set to 1 second
+  
     setIntervalId(id);
   };
+  
 
   const handleAnswerSelection = (option) => {
     clearInterval(intervalId); // Clear current timer when an answer is selected
@@ -198,26 +204,39 @@ function WriteExam() {
       ...selectedOptions,
       [selectedQuestionIndex]: option,
     });
+    if (selectedQuestionIndex === questions.length - 1) {
+      // Last question logic, perhaps calculate result or show completion message
+      calculateResult(false); // Example: Calculate results
+      return;
+    }
     setShowModal(false);
-  
+  setWaitTime(prevWaitTime => prevWaitTime + 1); // Resetting waitTime
+    
     // Delay the next question for 5 seconds (modify the delay time as needed)
     setTimeout(() => {
       setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
       startQuestionTimer(); // Start the timer for the next question
       setShowModal(true);
-    }, 10000); // Changed delay from 10 seconds to 5 seconds
+    }, 30000); // Changed delay from 10 seconds to 5 seconds
+    clearInterval(questionTimerId);
   };
   
   const handleSkip = () => {
     clearInterval(intervalId); // Clear current timer when skipping
     setShowModal(false);
-  
+    setWaitTime(prevWaitTime => prevWaitTime + 1);
+    if(lifeLine == 1){
+      calculateResult(false);
+      setWaitTime(0);
+    }
+    setLifeLine(prevLifeLine => prevLifeLine - 1);
     // Delay the next question for 5 seconds (modify the delay time as needed)
     setTimeout(() => {
       setSelectedQuestionIndex((prevIndex) => prevIndex + 1);
       startQuestionTimer(); // Start the timer for the next question
       setShowModal(true);
-    }, 5000); // Changed delay from 10 seconds to 5 seconds
+    }, 29000); // Changed delay from 10 seconds to 5 seconds
+    clearInterval(questionTimerId);
   };
 
   const resetGame = () => {
@@ -239,13 +258,13 @@ function WriteExam() {
         {view === "games" && (
           <div style={{ display: "grid" }}>
             {gameType === "sudoku" ? (
-              <SudokuGame />
+              <SudokuGame waitTime={waitTime}/>
             ) : gameType === "whackamole" ? (
-              <WhackAMole />
+              <WhackAMole waitTime={waitTime}/>
             ) : gameType === "wordguess" ? (
-              <WordGridGame />
+              <WordGridGame waitTime={waitTime}/>
             ) : gameType === "connect4" ? (
-              <ConnectFourGame />
+              <ConnectFourGame waitTime={waitTime}/>
             ) : (
               <p>Unknown game type</p>
             )}
@@ -312,7 +331,7 @@ function WriteExam() {
                 style={{
                   display: "grid",
                   gap: "2vh",
-                  maxHeight: "50vh",
+                  maxHeight: "54vh",
                   overflow: "auto",
                   msOverflowStyle: "none",
                   scrollbarWidth: "none",
@@ -358,6 +377,12 @@ function WriteExam() {
           ) : (
             questions[selectedQuestionIndex] && (
               <div className="flex flex-col gap-2">
+                <div className="heart-container">
+                LifeLines : 
+              {Array.from({ length: lifeLine }, (_, index) => (
+               <span key={index} className="heart-symbol">❤️</span>
+              ))}
+            </div>
                 <h1 className="text-2xl">
                   {selectedQuestionIndex + 1} :{" "}
                   {questions[selectedQuestionIndex]?.name}
