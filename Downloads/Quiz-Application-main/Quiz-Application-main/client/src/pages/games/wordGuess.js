@@ -1,12 +1,32 @@
 import React, { useState, useEffect } from "react";
 import "./newStyles.css";
 
-const WordGridGame = () => {
+const WordGridGame = ({ waitTime}) => {
   const [grid, setGrid] = useState([]);
   const [wordsToFind, setWordsToFind] = useState([]);
   const [foundWords, setFoundWords] = useState([]);
   const [selectedCells, setSelectedCells] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(waitTime);
+
+  useEffect(() => {
+    console.log("secondsLeft updated:", secondsLeft);
+    if (secondsLeft > 0) {
+      const timerId = setInterval(() => {
+        setSecondsLeft((prevSeconds) => {
+          console.log("Prev secondsLeft:", prevSeconds);
+          return prevSeconds - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }
+  }, [secondsLeft]);
+
+  useEffect(() => {
+    console.log("waitTime updated:", waitTime);
+    setSecondsLeft(waitTime); // Reset secondsLeft when waitTime changes
+  }, [waitTime]);
 
   useEffect(() => {
     generateGrid();
@@ -173,6 +193,10 @@ const WordGridGame = () => {
             </div>
           ))}
         </div>
+        <br></br>
+        <div className="text-center text-lg">
+                  Next Question in : {secondsLeft} seconds
+                </div>
       </div>
       {gameOver && (
         <div className="game-over">
