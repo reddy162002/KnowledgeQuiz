@@ -73,10 +73,31 @@ const solutionBoards = [
   ],
 ];
 
-const SudokuGame = () => {
+const SudokuGame = ({ waitTime}) => {
   const [board, setBoard] = useState([]);
   const [solutionBoard, setSolutionBoard] = useState([]);
   const [errors, setErrors] = useState([]);
+  const [secondsLeft, setSecondsLeft] = useState(waitTime);
+
+  useEffect(() => {
+    console.log("secondsLeft updated:", secondsLeft);
+    if (secondsLeft > 0) {
+      const timerId = setInterval(() => {
+        setSecondsLeft((prevSeconds) => {
+          console.log("Prev secondsLeft:", prevSeconds);
+          return prevSeconds - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }
+  }, [secondsLeft]);
+
+  useEffect(() => {
+    console.log("waitTime updated:", waitTime);
+    setSecondsLeft(waitTime); // Reset secondsLeft when waitTime changes
+  }, [waitTime]);
+ 
 
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * initialBoards.length);
@@ -84,6 +105,7 @@ const SudokuGame = () => {
     setSolutionBoard(solutionBoards[randomIndex]);
   }, []);
 
+ 
   const handleInputChange = (rowIndex, colIndex, value) => {
     const newBoard = [...board];
     newBoard[rowIndex][colIndex] = value;
@@ -170,6 +192,9 @@ const SudokuGame = () => {
           </div>
         ))}
       </div>
+      <div className="text-center text-lg mt-2">
+                  Next Question in : {secondsLeft} seconds
+                </div>
       <button style={{placeSelf:"center"}} className="primary-outlined-btn" onClick={handleSubmit}>
         Submit Sudoku
       </button>
