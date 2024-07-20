@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./newStyles.css";
 
-const WordGridGame = ({ waitTime}) => {
+const WordGridGame = ({ waitTime, lifeLine}) => {
   const [grid, setGrid] = useState([]);
   const [wordsToFind, setWordsToFind] = useState([]);
   const [foundWords, setFoundWords] = useState([]);
@@ -153,7 +153,18 @@ const WordGridGame = ({ waitTime}) => {
   };
 
   return (
-    <div className="word-grid-game" style={{display:"grid", justifyContent:"center"}}>
+    <div className="word-grid-game" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="heart-container">
+      <h3>
+                LifeLines : 
+                {lifeLine === 0
+  ? 0
+  : Array.from({ length: lifeLine }, (_, index) => (
+      <span key={index} className="heart-symbol">❤️</span>
+    ))}
+    </h3>
+            </div>
+      <div style={{display:"grid", justifyContent:"center"}}>
       <h1 style={{placeSelf:"center"}}>Word Search Game</h1>
       <p style={{placeSelf:"center"}}>Hidden Words: {wordsToFind.length}</p>
       <div className="grid-container">
@@ -205,6 +216,7 @@ const WordGridGame = ({ waitTime}) => {
           <button className="primary-outlined-btn" onClick={restartGame}>Play Again</button>
         </div>
       )}
+    </div>
     </div>
   );
 };
