@@ -73,7 +73,7 @@ const solutionBoards = [
   ],
 ];
 
-const SudokuGame = ({ waitTime}) => {
+const SudokuGame = ({ waitTime, lifeLine}) => {
   const [board, setBoard] = useState([]);
   const [solutionBoard, setSolutionBoard] = useState([]);
   const [errors, setErrors] = useState([]);
@@ -157,7 +157,19 @@ const SudokuGame = ({ waitTime}) => {
   };
 
   return (
-    <div className="sudoku" style={{display:"grid", justifyContent:"center"}}>
+    
+    <div className="sudoku"  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="heart-container">
+      <h3>
+                LifeLines : 
+                {lifeLine === 0
+  ? 0
+  : Array.from({ length: lifeLine }, (_, index) => (
+      <span key={index} className="heart-symbol">❤️</span>
+    ))}
+    </h3>
+            </div>
+      <div style={{display:"grid", justifyContent:"center"}}>
       <h1 className="sudoku-heading">Sudoku Game</h1>
       <div className="sudoku-board">
         {board.map((row, rowIndex) => (
@@ -198,6 +210,7 @@ const SudokuGame = ({ waitTime}) => {
       <button style={{placeSelf:"center"}} className="primary-outlined-btn" onClick={handleSubmit}>
         Submit Sudoku
       </button>
+    </div>
     </div>
   );
 };
