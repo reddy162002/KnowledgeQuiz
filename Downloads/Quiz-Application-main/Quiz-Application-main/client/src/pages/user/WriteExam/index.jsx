@@ -209,6 +209,7 @@ function WriteExam() {
       calculateResult(false); // Example: Calculate results
       return;
     }
+    
     setShowModal(false);
   setWaitTime(prevWaitTime => prevWaitTime + 1); // Resetting waitTime
     
@@ -258,13 +259,13 @@ function WriteExam() {
         {view === "games" && (
           <div style={{ display: "grid" }}>
             {gameType === "sudoku" ? (
-              <SudokuGame waitTime={waitTime}/>
+              <SudokuGame waitTime={waitTime} lifeLine={lifeLine}/>
             ) : gameType === "whackamole" ? (
-              <WhackAMole waitTime={waitTime}/>
+              <WhackAMole waitTime={waitTime} lifeLine={lifeLine}/>
             ) : gameType === "wordguess" ? (
-              <WordGridGame waitTime={waitTime}/>
+              <WordGridGame waitTime={waitTime} lifeLine={lifeLine}/>
             ) : gameType === "connect4" ? (
-              <ConnectFourGame waitTime={waitTime}/>
+              <ConnectFourGame waitTime={waitTime} lifeLine={lifeLine}/>
             ) : (
               <p>Unknown game type</p>
             )}
@@ -273,7 +274,7 @@ function WriteExam() {
 
         <Modal
           isOpen={showModal}
-          onClose={() => setShowModal(false)}
+          onClose={() => {setShowModal(false);resetGame()}}
           header="Question"
           size="xlarge"
         >
