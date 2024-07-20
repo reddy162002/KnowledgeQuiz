@@ -187,7 +187,7 @@ function UserReports() {
     {
       title: "Obtained Marks",
       dataIndex: "obtainedMarks",
-      render: (text, record) => <>{record.result.obtainedMarks}</>,
+      render: (text, record) => <>{record.result.obtainedMarks% 1 !== 0 ? record.result.obtainedMarks.toFixed(2) : record.result.obtainedMarks}</>,
     },
     {
       title: "Verdict",
@@ -249,54 +249,156 @@ function UserReports() {
   // Function to prepare game-specific chart data
   const prepareGameChartData = () => {
     const gameChartData = {};
-
+  
     reportsData.forEach((report) => {
       const gameName = report.result.gamename; // Assuming 'gamename' is where game name is stored
+      const examName = report.exam.name;
       const verdict = report.result.verdict.toLowerCase();
-
+  
       if (!gameChartData[gameName]) {
         gameChartData[gameName] = {
+          exams: {},
+        };
+      }
+  
+      if (!gameChartData[gameName].exams[examName]) {
+        gameChartData[gameName].exams[examName] = {
           Passed: 0,
           Failed: 0,
         };
       }
-
+  
       if (verdict === "pass" || verdict === "passed") {
-        gameChartData[gameName].Passed++;
+        gameChartData[gameName].exams[examName].Passed++;
       } else if (verdict === "fail" || verdict === "failed") {
-        gameChartData[gameName].Failed++;
+        gameChartData[gameName].exams[examName].Failed++;
       }
     });
-
+  
+    console.log("Chart is ",gameChartData);
     return gameChartData;
   };
-
+  
+  
+  
   const gameChartData = prepareGameChartData();
 
-  // Function to render game-specific bar charts
+  
+  // const renderGameCharts = () => {
+  //   return Object.keys(gameChartData).map((gameName, index) => {
+  //     const exams = Object.keys(gameChartData[gameName].exams);
+  
+  //     const datasets = exams.map((examName, idx) => {
+  //       const passedColor = idx % 2 === 0 ? "#6CCA70" : "#2196F3"; // Example of alternating colors for Passed bars
+  //       const failedColor = passedColor; // Failed bars have the same color as Passed bars
+  //       const failedBackgroundColor = `rgba(${hexToRgb(failedColor)}, 0.7)`; // Failed bars with 0.7 opacity
+  
+  //       return {
+  //         label: `${examName}`,
+  //         data: [
+  //           gameChartData[gameName].exams[examName].Passed,
+  //           gameChartData[gameName].exams[examName].Failed,
+  //         ],
+  //         backgroundColor: [passedColor, failedBackgroundColor], // Passed and Failed bars
+  //         hoverBackgroundColor: [passedColor, failedBackgroundColor], // Hover colors for Passed and Failed bars
+  //         barPercentage: 0.6,
+  //       };
+  //     });
+  
+  //     return (
+  //       <div key={index} style={{ marginBottom: "20px" }}>
+  //         <h3>{gameName} Quiz Results</h3>
+  //         <div>
+  //           <BarChartJS
+  //             chartData={{
+  //               labels: ["Passed", "Failed"],
+  //               datasets: datasets,
+  //             }}
+  //             title={`${gameName} Quiz Results`}
+  //             min={0}
+  //             max={50}
+  //           />
+  //         </div>
+  //       </div>
+  //     );
+  //   });
+  // };
+  
+  // // Function to convert hex color to RGB format
+  // const hexToRgb = (hex) => {
+  //   const bigint = parseInt(hex.substring(1), 16);
+  //   const r = (bigint >> 16) & 255;
+  //   const g = (bigint >> 8) & 255;
+  //   const b = bigint & 255;
+  //   return `${r}, ${g}, ${b}`;
+  // };
+  
   const renderGameCharts = () => {
-    return Object.keys(gameChartData).map((gameName, index) => (
-      <div key={index} style={{ marginBottom: "20px" }}>
-        <h3>{gameName} Quiz Results</h3>
-        <BarChartJS
-          chartData={{
-            labels: ["Passed", "Failed"],
-            datasets: [
-              {
-                label: `${gameName} Quiz Results`,
-                data: [gameChartData[gameName].Passed, gameChartData[gameName].Failed],
-                backgroundColor: ["#6CCA70", "#E4797B"],
-                hoverBackgroundColor: ["#66bb6a", "#e57373"],
-              },
-            ],
-          }}
-          title={`${gameName} Quiz Results`}
-          min = {0}
-          max = {50}
-        />
-      </div>
-    ));
+    const passedColors = ["#6CCA70", "#2196F3", "#FFC107", "#9C27B0"];
+    return Object.keys(gameChartData).map((gameName, index) => {
+      const exams = Object.keys(gameChartData[gameName].exams);
+  
+      const datasets = exams.map((examName, idx) => {
+        const passedColor = passedColors[idx % passedColors.length]; // Example of alternating colors for Passed bars
+        const failedColor = passedColor; // Failed bars have the same color as Passed bars with reduced opacity
+        const failedBackgroundColor = `rgba(${hexToRgb(failedColor)}, 0.5)`; // Failed bars with 0.7 opacity
+  
+        return {
+          label: `${examName}`,
+          data: [
+            gameChartData[gameName].exams[examName].Passed,
+            gameChartData[gameName].exams[examName].Failed,
+          ],
+          backgroundColor: [passedColor, failedBackgroundColor], // Passed and Failed bars
+          hoverBackgroundColor: [passedColor, failedBackgroundColor], // Hover colors for Passed and Failed bars
+          borderColor: [passedColor, "black"], // Border colors for Passed and Failed bars
+          borderWidth: 1, // Border width for Failed bars
+          barPercentage: 0.4, // Adjust bar width as needed
+          borderDash: [5, 5],
+        };
+      });
+  
+      return (
+        <div key={index} style={{ marginBottom: "20px" }}>
+          <h3>{gameName} Quiz Results</h3>
+          <div>
+            <BarChartJS
+              chartData={{
+                labels: ["Passed", "Failed"],
+                datasets: datasets,
+              }}
+              title={`${gameName} Quiz Results`}
+              min={0}
+              max={50}
+              options={{
+                indexAxis: 'y', // Ensure bars are grouped horizontally
+                barGroup: { groupWidth: '75%' }, // Adjust group width as needed
+                scales: {
+                  x: {
+                    stacked: true, // Ensure bars are stacked horizontally
+                  },
+                  y: {
+                    stacked: true, // Ensure bars are stacked vertically
+                    beginAtZero: true,
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+      );
+    });
   };
+  
+  // Function to convert hex color to RGB format
+  const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.substring(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r}, ${g}, ${b}`;
+  };
+  
 
   return (
     <div>
