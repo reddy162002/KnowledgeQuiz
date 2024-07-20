@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-const ConnectFourGame = ({ waitTime}) => {
+const ConnectFourGame = ({ waitTime, lifeLine}) => {
   const rows = 6;
   const columns = 7;
   const [board, setBoard] = useState(
@@ -215,6 +215,16 @@ const ConnectFourGame = ({ waitTime}) => {
 
   return (
     <div className="connect-container">
+      <div className="heart-container">
+      <h3>
+                LifeLines : 
+                {lifeLine === 0
+  ? 0
+  : Array.from({ length: lifeLine }, (_, index) => (
+      <span key={index} className="heart-symbol">❤️</span>
+    ))}
+    </h3>
+            </div>
       <h1>Connect Four</h1>
       {winner && <h2>{winner=== "Red" ? "Blue" : "Yellow"} wins!</h2>}
       <div className="board">
