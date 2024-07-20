@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 
-const WhackAMole = ({ waitTime}) => {
+const WhackAMole = ({ waitTime, lifeLine}) => {
   const [holes, setHoles] = useState(new Array(9).fill(false));
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -63,6 +63,16 @@ const WhackAMole = ({ waitTime}) => {
 
   return (
       <div className="game-container">
+        <div className="heart-container text-center">
+      <h3>
+                LifeLines : 
+                {lifeLine === 0
+  ? 0
+  : Array.from({ length: lifeLine }, (_, index) => (
+      <span key={index} className="heart-symbol">❤️</span>
+    ))}
+    </h3>
+            </div>
         <div className="text-center">
                   Next Question in : {secondsLeft} seconds
                 </div>
