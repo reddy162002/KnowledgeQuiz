@@ -73,7 +73,7 @@ function LeaderBoard() {
     {
       title: "Obtained Marks",
       dataIndex: "correctAnswers",
-      render: (text, record) => <>{record.result?.obtainedMarks}</>,
+      render: (text, record) => <>{record.result.obtainedMarks% 1 !== 0 ? record.result.obtainedMarks.toFixed(2) : record.result.obtainedMarks}</>,
       shouldDisplay: true, // Always display this column in the columns definition
     },
     {
